@@ -13,6 +13,8 @@ A ZSH plugin that automatically switches Node.js versions (using `nvm`) and mana
 - ⚙️ Interactive configuration via command line
 - 🔁 Smart installation/update process that preserves existing settings
 - 📖 Built-in help system with detailed command documentation
+- 🔄 Self-update capability to keep the plugin current
+- 🗑️ Clean uninstallation option to remove all traces of the plugin
 
 ## Requirements
 
@@ -76,7 +78,16 @@ wget -O- https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-switch
 
 ### Updating the Plugin
 
-To update the plugin to the latest version, simply run the installation command again. The script will detect that it's an update and handle it appropriately:
+To update the plugin to the latest version, you can use the built-in update command:
+
+```bash
+# Update the plugin to the latest version
+nvm_pnpm_auto_switch_update
+```
+
+This command will automatically detect the best method to update the plugin (Git, curl, or wget), and will handle the update process for you.
+
+Alternatively, you can manually update using one of the installation methods:
 
 ```bash
 # If you used Git
@@ -89,6 +100,22 @@ curl -fsSL https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-swit
 ```
 
 During an update, you'll be asked if you want to reconfigure your settings or keep your existing configuration.
+
+### Uninstalling the Plugin
+
+To remove the plugin and all related files and settings, use the built-in uninstall command:
+
+```bash
+# Uninstall the plugin
+nvm_pnpm_auto_switch_uninstall
+```
+
+This command will:
+- Remove all environment variables from your `.zshenv` file
+- Remove the plugin from your `.zshrc` file
+- Delete the plugin directory
+- Unset all environment variables for the current session
+- Provide instructions for completing the uninstallation
 
 ### Manual installation
 
@@ -146,6 +173,8 @@ After installation, the following commands are available to help you manage the 
 | `nvm_pnpm_auto_switch_workspace [path]` | View or change the workspace directory |
 | `nvm_pnpm_auto_switch_list_projects` | Toggle automatic project listing on/off |
 | `nvm_pnpm_auto_switch_debug` | Toggle debug mode on/off |
+| `nvm_pnpm_auto_switch_update` | Update the plugin to the latest version from GitHub |
+| `nvm_pnpm_auto_switch_uninstall` | Uninstall the plugin and clean up all related files and settings |
 
 ### Help and Documentation
 
@@ -198,6 +227,24 @@ nvm_pnpm_auto_switch_debug
 
 Debug mode provides detailed information about what the plugin is doing, which can be helpful for troubleshooting. When enabled, you'll see messages about detected Node.js versions, package managers, and more.
 
+### Updating the Plugin
+
+```bash
+# Update the plugin to the latest version
+nvm_pnpm_auto_switch_update
+```
+
+This command will automatically update the plugin to the latest version from GitHub. It will try to use Git if you installed via git clone, or fall back to curl or wget if necessary.
+
+### Uninstalling the Plugin
+
+```bash
+# Remove the plugin and clean up all related files and settings
+nvm_pnpm_auto_switch_uninstall
+```
+
+If you no longer want to use the plugin, this command will completely remove it and clean up all related files and settings. It will ask for confirmation before proceeding.
+
 ### Backwards Compatibility
 
 For backwards compatibility, the plugin provides aliases for the old command names:
@@ -209,6 +256,8 @@ alias node_auto_switch_workspace="nvm_pnpm_auto_switch_workspace"
 alias node_auto_switch_configure="nvm_pnpm_auto_switch_configure"
 alias node_auto_switch_help="nvm_pnpm_auto_switch_help"
 alias node_auto_switch_man="nvm_pnpm_auto_switch_help"
+alias node_auto_switch_update="nvm_pnpm_auto_switch_update"
+alias node_auto_switch_uninstall="nvm_pnpm_auto_switch_uninstall"
 ```
 
 These aliases allow you to continue using the old command names if you prefer.

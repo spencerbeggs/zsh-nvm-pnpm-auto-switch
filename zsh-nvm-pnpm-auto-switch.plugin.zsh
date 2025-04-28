@@ -6,6 +6,11 @@ NVM_PNPM_AUTO_SWITCH_DEBUG=${NVM_PNPM_AUTO_SWITCH_DEBUG:-0}
 export NVM_PNPM_AUTO_SWITCH_WORKSPACE=${NVM_PNPM_AUTO_SWITCH_WORKSPACE:-"$HOME/workspace"}
 export NVM_PNPM_AUTO_SWITCH_LIST_PROJECTS=${NVM_PNPM_AUTO_SWITCH_LIST_PROJECTS:-0}
 
+# Set plugin directory path
+PLUGIN_DIR=${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch
+PLUGIN_NAME="zsh-nvm-pnpm-auto-switch"
+REPO_URL="https://github.com/spencerbeggs/zsh-nvm-pnpm-auto-switch"
+
 # Debug output function
 _nvm_pnpm_auto_switch_debug() {
   if [[ "$NVM_PNPM_AUTO_SWITCH_DEBUG" == "1" ]]; then
@@ -139,6 +144,105 @@ nvm_pnpm_auto_switch_workspace() {
   fi
 }
 
+# Function to update the plugin from GitHub
+nvm_pnpm_auto_switch_update() {
+  echo "🔄 Updating zsh-nvm-pnpm-auto-switch plugin..."
+  
+  # Check if we're in a git repository
+  if [[ -d "$PLUGIN_DIR/.git" ]]; then
+    # Git update method
+    echo "📦 Using Git to update the plugin..."
+    cd "$PLUGIN_DIR" && git pull
+    if [[ $? -eq 0 ]]; then
+      echo "✅ Plugin updated successfully using Git!"
+      echo "Run 'source ~/.zshrc' to apply changes."
+      return 0
+    else
+      echo "❌ Git update failed. Trying alternative methods..."
+    fi
+  fi
+  
+  # Try curl or wget as fallback
+  if command -v curl &> /dev/null; then
+    echo "📦 Using curl to download latest version..."
+    curl -fsSL "$REPO_URL/raw/main/install-remote.sh" | zsh
+    return $?
+  elif command -v wget &> /dev/null; then
+    echo "📦 Using wget to download latest version..."
+    wget -O- "$REPO_URL/raw/main/install-remote.sh" | zsh
+    return $?
+  else
+    echo "❌ Update failed: Neither git, curl, nor wget is available."
+    echo "Please install one of these tools and try again."
+    return 1
+  fi
+}
+
+# Function to uninstall the plugin
+nvm_pnpm_auto_switch_uninstall() {
+  echo "🗑️  Uninstalling zsh-nvm-pnpm-auto-switch plugin..."
+  
+  # Ask for confirmation
+  echo -n "Are you sure you want to uninstall the plugin? (y/n): "
+  read confirmation
+  if [[ "$confirmation" != "y" && "$confirmation" != "Y" ]]; then
+    echo "Uninstallation cancelled."
+    return 1
+  fi
+  
+  # Remove environment variables from .zshenv
+  if [[ -f "$HOME/.zshenv" ]]; then
+    echo "🧹 Removing environment variables from ~/.zshenv..."
+    sed -i.bak '/NVM_PNPM_AUTO_SWITCH_WORKSPACE/d' "$HOME/.zshenv"
+    sed -i.bak '/NVM_PNPM_AUTO_SWITCH_LIST_PROJECTS/d' "$HOME/.zshenv"
+    sed -i.bak '/NVM_PNPM_AUTO_SWITCH_DEBUG/d' "$HOME/.zshenv"
+    
+    # Also clean up old variables if they exist
+    sed -i.bak '/NODE_AUTO_SWITCH_WORKSPACE/d' "$HOME/.zshenv"
+    sed -i.bak '/NODE_AUTO_SWITCH_LIST_PROJECTS/d' "$HOME/.zshenv"
+    sed -i.bak '/NODE_AUTO_SWITCH_DEBUG/d' "$HOME/.zshenv"
+  fi
+  
+  # Remove plugin from plugins array in .zshrc
+  if [[ -f "$HOME/.zshrc" ]]; then
+    echo "🧹 Removing plugin from ~/.zshrc..."
+    
+    # Check if plugins=(...) is all on one line
+    if grep -q "^plugins=([^)]*$PLUGIN_NAME" "$HOME/.zshrc"; then
+      # Remove the plugin from the line
+      sed -i.bak "s/plugins=(\([^)]*\)$PLUGIN_NAME\([^)]*\))/plugins=(\1\2)/g" "$HOME/.zshrc"
+      # Clean up extra spaces
+      sed -i.bak "s/plugins=(  *)/plugins=(/g" "$HOME/.zshrc"
+      sed -i.bak "s/plugins=( )/plugins=(/g" "$HOME/.zshrc"
+    fi
+    
+    # Check if plugin is on its own line in a multi-line plugins array
+    local plugin_line=$(grep -n "^\s*$PLUGIN_NAME$" "$HOME/.zshrc" | cut -d':' -f1)
+    if [[ -n "$plugin_line" ]]; then
+      sed -i.bak "${plugin_line}d" "$HOME/.zshrc"
+    fi
+  fi
+  
+  # Remove the plugin directory
+  if [[ -d "$PLUGIN_DIR" ]]; then
+    echo "🗑️  Removing plugin directory..."
+    rm -rf "$PLUGIN_DIR"
+  fi
+  
+  echo "✅ zsh-nvm-pnpm-auto-switch plugin has been uninstalled."
+  echo "Please restart your terminal or run 'source ~/.zshrc' to complete the uninstallation."
+  
+  # Unset environment variables for current session
+  unset NVM_PNPM_AUTO_SWITCH_WORKSPACE
+  unset NVM_PNPM_AUTO_SWITCH_LIST_PROJECTS
+  unset NVM_PNPM_AUTO_SWITCH_DEBUG
+  
+  # Unset auto-switch function for current session
+  unset -f nvm_pnpm_auto_switch
+  
+  return 0
+}
+
 # Function to show help information
 nvm_pnpm_auto_switch_help() {
   echo "🚀 zsh-nvm-pnpm-auto-switch - Help"
@@ -161,6 +265,12 @@ nvm_pnpm_auto_switch_help() {
   echo ""
   echo "  nvm_pnpm_auto_switch_debug"
   echo "    Toggle debug mode to show/hide detailed operation information."
+  echo ""
+  echo "  nvm_pnpm_auto_switch_update"
+  echo "    Update the plugin to the latest version from GitHub."
+  echo ""
+  echo "  nvm_pnpm_auto_switch_uninstall"
+  echo "    Uninstall the plugin and clean up all related files and settings."
   echo ""
   echo "  nvm_pnpm_auto_switch_help"
   echo "    Display this help information."
@@ -279,3 +389,5 @@ alias node_auto_switch_workspace="nvm_pnpm_auto_switch_workspace"
 alias node_auto_switch_configure="nvm_pnpm_auto_switch_configure"
 alias node_auto_switch_help="nvm_pnpm_auto_switch_help"
 alias node_auto_switch_man="nvm_pnpm_auto_switch_help"
+alias node_auto_switch_update="nvm_pnpm_auto_switch_update"
+alias node_auto_switch_uninstall="nvm_pnpm_auto_switch_uninstall"
