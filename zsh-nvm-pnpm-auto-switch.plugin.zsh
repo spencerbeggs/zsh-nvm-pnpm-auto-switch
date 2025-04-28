@@ -148,6 +148,9 @@ nvm_pnpm_auto_switch_workspace() {
 nvm_pnpm_auto_switch_update() {
   echo "🔄 Updating zsh-nvm-pnpm-auto-switch plugin..."
   
+  # Set the environment variable to indicate update is in progress
+  export NVM_PNPM_AUTO_SWITCH_UPDATE_IN_PROGRESS=1
+  
   # Check if we're in a git repository
   if [[ -d "$PLUGIN_DIR/.git" ]]; then
     # Git update method
@@ -156,6 +159,7 @@ nvm_pnpm_auto_switch_update() {
     if [[ $? -eq 0 ]]; then
       echo "✅ Plugin updated successfully using Git!"
       echo "Run 'source ~/.zshrc' to apply changes."
+      unset NVM_PNPM_AUTO_SWITCH_UPDATE_IN_PROGRESS
       return 0
     else
       echo "❌ Git update failed. Trying alternative methods..."
@@ -165,15 +169,18 @@ nvm_pnpm_auto_switch_update() {
   # Try curl or wget as fallback
   if command -v curl &> /dev/null; then
     echo "📦 Using curl to download latest version..."
-    curl -fsSL "$REPO_URL/raw/main/install-remote.sh" | zsh
+    curl -fsSL "$REPO_URL/raw/main/install-remote.sh" | NVM_PNPM_AUTO_SWITCH_UPDATE_IN_PROGRESS=1 zsh
+    unset NVM_PNPM_AUTO_SWITCH_UPDATE_IN_PROGRESS
     return $?
   elif command -v wget &> /dev/null; then
     echo "📦 Using wget to download latest version..."
-    wget -O- "$REPO_URL/raw/main/install-remote.sh" | zsh
+    wget -O- "$REPO_URL/raw/main/install-remote.sh" | NVM_PNPM_AUTO_SWITCH_UPDATE_IN_PROGRESS=1 zsh
+    unset NVM_PNPM_AUTO_SWITCH_UPDATE_IN_PROGRESS
     return $?
   else
     echo "❌ Update failed: Neither git, curl, nor wget is available."
     echo "Please install one of these tools and try again."
+    unset NVM_PNPM_AUTO_SWITCH_UPDATE_IN_PROGRESS
     return 1
   fi
 }
@@ -396,3 +403,27 @@ nvm_pnpm_auto_switch
 
 # Alias 'man' to 'help' for easier discovery
 alias nvm_pnpm_auto_switch_man="nvm_pnpm_auto_switch_help"
+
+# Add completion functions for oh-my-zsh
+if [[ -n "$ZSH_VERSION" ]]; then
+  # Completion function for workspace command
+  _nvm_pnpm_auto_switch_workspace() {
+    _arguments \
+      ':directory:_path_files -/'
+  }
+
+  # Completion function for commands without arguments
+  _nvm_pnpm_auto_switch_noargs() {
+    _message "This command doesn't take any arguments"
+  }
+
+  # Register completion functions
+  compdef _nvm_pnpm_auto_switch_workspace nvm_pnpm_auto_switch_workspace
+  compdef _nvm_pnpm_auto_switch_noargs nvm_pnpm_auto_switch_debug
+  compdef _nvm_pnpm_auto_switch_noargs nvm_pnpm_auto_switch_list_projects
+  compdef _nvm_pnpm_auto_switch_noargs nvm_pnpm_auto_switch_update
+  compdef _nvm_pnpm_auto_switch_noargs nvm_pnpm_auto_switch_uninstall
+  compdef _nvm_pnpm_auto_switch_noargs nvm_pnpm_auto_switch_help
+  compdef _nvm_pnpm_auto_switch_noargs nvm_pnpm_auto_switch_man
+  compdef _nvm_pnpm_auto_switch_noargs nvm_pnpm_auto_switch_configure
+fi

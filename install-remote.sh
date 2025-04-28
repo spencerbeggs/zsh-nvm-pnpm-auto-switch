@@ -69,15 +69,21 @@ fi
 
 # Interactive configuration unless unattended
 if [[ "$UNATTENDED" -eq 0 ]]; then
-  # Only ask about updating configuration if this is an update
+  # Only ask about updating configuration if this is an update and not launched by nvm_pnpm_auto_switch_update
   if [[ "$PLUGIN_INSTALLED" -eq 1 ]]; then
-    echo "🔧 Would you like to update your plugin configuration?"
-    echo -n "   (y/n, press Enter for n): "
-    read update_config
-    if [[ "$update_config" != "y" && "$update_config" != "Y" ]]; then
-      echo "✅ Plugin updated without changing your configuration."
-      echo "Run 'nvm_pnpm_auto_switch_configure' if you want to change your settings later."
+    # Check if this is an update operation from nvm_pnpm_auto_switch_update
+    if [[ -n "$NVM_PNPM_AUTO_SWITCH_UPDATE_IN_PROGRESS" ]]; then
+      # Skip configuration prompt during update
       exit 0
+    else
+      echo "🔧 Would you like to update your plugin configuration?"
+      echo -n "   (y/n, press Enter for n): "
+      read update_config
+      if [[ "$update_config" != "y" && "$update_config" != "Y" ]]; then
+        echo "✅ Plugin updated without changing your configuration."
+        echo "Run 'nvm_pnpm_auto_switch_configure' if you want to change your settings later."
+        exit 0
+      fi
     fi
   fi
 
