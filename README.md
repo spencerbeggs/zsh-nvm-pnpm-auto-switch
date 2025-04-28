@@ -54,15 +54,22 @@ wget -O- https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-switch
 
 For automated/unattended installation (using default settings):
 
+#### Git-based unattended installation
+
 ```bash
-# Git-based installation with default settings
 git clone https://github.com/spencerbeggs/zsh-nvm-pnpm-auto-switch.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch
 ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch/install.sh --unattended
+```
 
-# Or with curl
+#### curl unattended installation
+
+```bash
 curl -fsSL https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-switch/main/install-remote.sh | zsh -s -- --unattended
+```
 
-# Or with wget
+#### wget unattended installation
+
+```bash
 wget -O- https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-switch/main/install-remote.sh | zsh -s -- --unattended
 ```
 
