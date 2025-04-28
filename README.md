@@ -36,21 +36,21 @@ You can install the plugin directly from GitHub using one of the following metho
 git clone https://github.com/spencerbeggs/zsh-nvm-pnpm-auto-switch.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch
 
 # Run the interactive installation script
-${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch/install.sh
+${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch/src/install.sh
 ```
 
 #### Using curl
 
 ```bash
 # Download and run the installer script
-curl -fsSL https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-switch/main/install-remote.sh | zsh
+curl -fsSL https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-switch/main/src/install-remote.sh | zsh
 ```
 
 #### Using wget
 
 ```bash
 # Download and run the installer script
-wget -O- https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-switch/main/install-remote.sh | zsh
+wget -O- https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-switch/main/src/install-remote.sh | zsh
 ```
 
 ### Unattended Installation
@@ -61,19 +61,19 @@ For automated/unattended installation (using default settings):
 
 ```bash
 git clone https://github.com/spencerbeggs/zsh-nvm-pnpm-auto-switch.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch
-${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch/install.sh --unattended
+${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch/src/install.sh --unattended
 ```
 
 #### curl unattended installation
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-switch/main/install-remote.sh | zsh -s -- --unattended
+curl -fsSL https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-switch/main/src/install-remote.sh | zsh -s -- --unattended
 ```
 
 #### wget unattended installation
 
 ```bash
-wget -O- https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-switch/main/install-remote.sh | zsh -s -- --unattended
+wget -O- https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-switch/main/src/install-remote.sh | zsh -s -- --unattended
 ```
 
 ### Updating the Plugin
@@ -93,10 +93,10 @@ Alternatively, you can manually update using one of the installation methods:
 # If you used Git
 cd ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch
 git pull
-./install.sh
+./src/install.sh
 
 # Or use the remote installer again
-curl -fsSL https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-switch/main/install-remote.sh | zsh
+curl -fsSL https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-switch/main/src/install-remote.sh | zsh
 ```
 
 During an update, you'll be asked if you want to reconfigure your settings or keep your existing configuration.
