@@ -37,8 +37,8 @@ if [[ "$UNATTENDED" -eq 0 ]]; then
 fi
 
 # Download the plugin files
-curl -fsSL "$REPO_URL/raw/main/$PLUGIN_NAME.plugin.zsh" -o "$PLUGIN_DIR/$PLUGIN_NAME.plugin.zsh"
-curl -fsSL "$REPO_URL/raw/main/workspace-config.zsh" -o "$PLUGIN_DIR/workspace-config.zsh"
+curl -fsSL "$REPO_URL/raw/main/src/$PLUGIN_NAME.plugin.zsh" -o "$PLUGIN_DIR/$PLUGIN_NAME.plugin.zsh"
+curl -fsSL "$REPO_URL/raw/main/src/workspace-config.zsh" -o "$PLUGIN_DIR/workspace-config.zsh"
 
 # Make the plugin executable
 chmod +x "$PLUGIN_DIR/$PLUGIN_NAME.plugin.zsh"
