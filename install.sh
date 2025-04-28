@@ -257,5 +257,5 @@ fi
 
 if [[ "$UNATTENDED" -eq 0 ]]; then
   echo ""
-  echo "Restart your shell or run 'source ~/.zshrc' to activate the plugin."
+  echo "🔔 IMPORTANT: Run 'source ~/.zshrc' or restart your terminal to activate the plugin."
 fi

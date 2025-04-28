@@ -158,7 +158,8 @@ nvm_pnpm_auto_switch_update() {
     cd "$PLUGIN_DIR" && git pull
     if [[ $? -eq 0 ]]; then
       echo "✅ Plugin updated successfully using Git!"
-      echo "Run 'source ~/.zshrc' to apply changes."
+      echo ""
+      echo "🔔 IMPORTANT: Run 'source ~/.zshrc' or restart your terminal to apply changes."
       unset NVM_PNPM_AUTO_SWITCH_UPDATE_IN_PROGRESS
       return 0
     else
@@ -167,22 +168,30 @@ nvm_pnpm_auto_switch_update() {
   fi
   
   # Try curl or wget as fallback
+  local update_result=0
   if command -v curl &> /dev/null; then
     echo "📦 Using curl to download latest version..."
     curl -fsSL "$REPO_URL/raw/main/install-remote.sh" | NVM_PNPM_AUTO_SWITCH_UPDATE_IN_PROGRESS=1 zsh
-    unset NVM_PNPM_AUTO_SWITCH_UPDATE_IN_PROGRESS
-    return $?
+    update_result=$?
   elif command -v wget &> /dev/null; then
     echo "📦 Using wget to download latest version..."
     wget -O- "$REPO_URL/raw/main/install-remote.sh" | NVM_PNPM_AUTO_SWITCH_UPDATE_IN_PROGRESS=1 zsh
-    unset NVM_PNPM_AUTO_SWITCH_UPDATE_IN_PROGRESS
-    return $?
+    update_result=$?
   else
     echo "❌ Update failed: Neither git, curl, nor wget is available."
     echo "Please install one of these tools and try again."
     unset NVM_PNPM_AUTO_SWITCH_UPDATE_IN_PROGRESS
     return 1
   fi
+  
+  # If the update was successful, remind the user to source their .zshrc
+  if [[ $update_result -eq 0 ]]; then
+    echo ""
+    echo "🔔 IMPORTANT: Run 'source ~/.zshrc' or restart your terminal to apply changes."
+  fi
+  
+  unset NVM_PNPM_AUTO_SWITCH_UPDATE_IN_PROGRESS
+  return $update_result
 }
 
 # Function to uninstall the plugin
