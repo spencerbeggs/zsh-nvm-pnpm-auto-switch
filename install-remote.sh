@@ -1,7 +1,7 @@
 #!/usr/bin/env zsh
 # Remote installer for zsh-nvm-pnpm-auto-switch plugin
 
-echo "🚀 Installing zsh-nvm-pnpm-auto-switch plugin..."
+echo "🚀 Installing/updating zsh-nvm-pnpm-auto-switch plugin..."
 
 # Parse arguments
 UNATTENDED=0
@@ -18,7 +18,20 @@ PLUGIN_NAME="zsh-nvm-pnpm-auto-switch"
 PLUGIN_DIR="$ZSH_CUSTOM/plugins/$PLUGIN_NAME"
 REPO_URL="https://github.com/spencerbeggs/zsh-nvm-pnpm-auto-switch"
 
-# Create plugin directory
+# Check if the plugin is already installed
+PLUGIN_INSTALLED=0
+if [[ -d "$PLUGIN_DIR" ]]; then
+  PLUGIN_INSTALLED=1
+  if [[ "$UNATTENDED" -eq 0 ]]; then
+    echo "🔄 Updating zsh-nvm-pnpm-auto-switch..."
+  fi
+else
+  if [[ "$UNATTENDED" -eq 0 ]]; then
+    echo "📥 Installing zsh-nvm-pnpm-auto-switch..."
+  fi
+fi
+
+# Create plugin directory if it doesn't exist
 mkdir -p "$PLUGIN_DIR"
 
 echo "📥 Downloading plugin from $REPO_URL..."
@@ -30,13 +43,42 @@ curl -fsSL "$REPO_URL/raw/main/workspace-config.zsh" -o "$PLUGIN_DIR/workspace-c
 # Make the plugin executable
 chmod +x "$PLUGIN_DIR/$PLUGIN_NAME.plugin.zsh"
 
+# Skip configuration if it's an update and we're in unattended mode
+if [[ "$PLUGIN_INSTALLED" -eq 1 && "$UNATTENDED" -eq 1 ]]; then
+  echo "🔄 Updated plugin files successfully!"
+  echo "Run 'node_auto_switch_configure' if you want to change your settings."
+  exit 0
+fi
+
 # Default values
 DEFAULT_WORKSPACE="$HOME/workspace"
 DEFAULT_LIST_PROJECTS=0
 DEFAULT_DEBUG=0
 
+# Read existing values from .zshenv if present
+if [[ -f "$HOME/.zshenv" ]]; then
+  existing_workspace=$(grep "^export NODE_AUTO_SWITCH_WORKSPACE=" "$HOME/.zshenv" | sed 's/^export NODE_AUTO_SWITCH_WORKSPACE="\(.*\)".*$/\1/')
+  existing_list_projects=$(grep "^export NODE_AUTO_SWITCH_LIST_PROJECTS=" "$HOME/.zshenv" | sed 's/^export NODE_AUTO_SWITCH_LIST_PROJECTS=\(.*\) #.*$/\1/')
+  existing_debug=$(grep "^export NODE_AUTO_SWITCH_DEBUG=" "$HOME/.zshenv" | sed 's/^export NODE_AUTO_SWITCH_DEBUG=\(.*\) #.*$/\1/')
+  
+  [[ -n "$existing_workspace" ]] && DEFAULT_WORKSPACE="$existing_workspace"
+  [[ -n "$existing_list_projects" ]] && DEFAULT_LIST_PROJECTS="$existing_list_projects"
+  [[ -n "$existing_debug" ]] && DEFAULT_DEBUG="$existing_debug"
+fi
+
 # Interactive configuration unless unattended
 if [[ "$UNATTENDED" -eq 0 ]]; then
+  if [[ "$PLUGIN_INSTALLED" -eq 1 ]]; then
+    echo "🔧 Would you like to update your plugin configuration?"
+    echo -n "   (y/n, press Enter for n): "
+    read update_config
+    if [[ "$update_config" != "y" && "$update_config" != "Y" ]]; then
+      echo "✅ Plugin updated without changing your configuration."
+      echo "Run 'node_auto_switch_configure' if you want to change your settings later."
+      exit 0
+    fi
+  fi
+
   echo "🔧 zsh-nvm-pnpm-auto-switch - Interactive Setup"
   echo "========================================"
   echo ""
@@ -70,7 +112,7 @@ else
   workspace_dir=$DEFAULT_WORKSPACE
   list_projects=$DEFAULT_LIST_PROJECTS
   debug_mode=$DEFAULT_DEBUG
-  echo "🤖 Running in unattended mode, using default settings"
+  echo "🤖 Running in unattended mode, using default or existing settings"
 fi
 
 # Add environment variables to zshenv if they don't exist
@@ -166,17 +208,32 @@ add_plugin_to_zshrc() {
   return $((1 - plugins_added))
 }
 
-# Add the plugin to the plugins array
-add_plugin_to_zshrc "$PLUGIN_NAME"
+# Only try to add to .zshrc if it's a fresh installation
+if [[ "$PLUGIN_INSTALLED" -eq 0 ]]; then
+  # Add the plugin to the plugins array
+  add_plugin_to_zshrc "$PLUGIN_NAME"
+fi
 
-if [[ "$UNATTENDED" -eq 0 ]]; then
-  echo ""
-  echo "✅ zsh-nvm-pnpm-auto-switch installed successfully with your custom settings!"
-  echo "📂 Workspace directory: $workspace_dir"
-  echo "📋 Project listing: $([ "$list_projects" -eq 1 ] && echo "enabled" || echo "disabled")"
-  echo "🐛 Debug mode: $([ "$debug_mode" -eq 1 ] && echo "enabled" || echo "disabled")"
+if [[ "$PLUGIN_INSTALLED" -eq 1 ]]; then
+  if [[ "$UNATTENDED" -eq 0 ]]; then
+    echo ""
+    echo "✅ zsh-nvm-pnpm-auto-switch updated successfully with your settings!"
+    echo "📂 Workspace directory: $workspace_dir"
+    echo "📋 Project listing: $([ "$list_projects" -eq 1 ] && echo "enabled" || echo "disabled")"
+    echo "🐛 Debug mode: $([ "$debug_mode" -eq 1 ] && echo "enabled" || echo "disabled")"
+  else
+    echo "✅ zsh-nvm-pnpm-auto-switch updated successfully with existing settings!"
+  fi
 else
-  echo "✅ zsh-nvm-pnpm-auto-switch installed successfully with default settings!"
+  if [[ "$UNATTENDED" -eq 0 ]]; then
+    echo ""
+    echo "✅ zsh-nvm-pnpm-auto-switch installed successfully with your settings!"
+    echo "📂 Workspace directory: $workspace_dir"
+    echo "📋 Project listing: $([ "$list_projects" -eq 1 ] && echo "enabled" || echo "disabled")"
+    echo "🐛 Debug mode: $([ "$debug_mode" -eq 1 ] && echo "enabled" || echo "disabled")"
+  else
+    echo "✅ zsh-nvm-pnpm-auto-switch installed successfully with default settings!"
+  fi
 fi
 
 echo ""

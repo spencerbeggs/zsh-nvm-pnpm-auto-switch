@@ -11,6 +11,7 @@ A ZSH plugin that automatically switches Node.js versions (using `nvm`) and mana
 - 🏠 Special workspace directory integration with optional project listing
 - 😶 Silent operation by default - only shows messages when needed
 - ⚙️ Interactive configuration via command line
+- 🔁 Smart installation/update process that preserves existing settings
 
 ## Requirements
 
@@ -64,6 +65,22 @@ curl -fsSL https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-swit
 # Or with wget
 wget -O- https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-switch/main/install-remote.sh | zsh -s -- --unattended
 ```
+
+### Updating the Plugin
+
+To update the plugin to the latest version, simply run the installation command again. The script will detect that it's an update and handle it appropriately:
+
+```bash
+# If you used Git
+cd ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch
+git pull
+./install.sh
+
+# Or use the remote installer again
+curl -fsSL https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-switch/main/install-remote.sh | zsh
+```
+
+During an update, you'll be asked if you want to reconfigure your settings or keep your existing configuration.
 
 ### Manual installation
 
