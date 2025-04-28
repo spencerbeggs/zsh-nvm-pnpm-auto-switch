@@ -43,10 +43,9 @@ curl -fsSL "$REPO_URL/raw/main/workspace-config.zsh" -o "$PLUGIN_DIR/workspace-c
 # Make the plugin executable
 chmod +x "$PLUGIN_DIR/$PLUGIN_NAME.plugin.zsh"
 
-# Skip configuration if it's an update and we're in unattended mode
+# Skip configuration entirely if it's an update and we're in unattended mode
 if [[ "$PLUGIN_INSTALLED" -eq 1 && "$UNATTENDED" -eq 1 ]]; then
   echo "🔄 Updated plugin files successfully."
-  echo "Run 'nvm_pnpm_auto_switch_configure' if you want to change your settings."
   exit 0
 fi
 
