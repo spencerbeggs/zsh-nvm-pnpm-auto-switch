@@ -102,26 +102,72 @@ update_env_var "NODE_AUTO_SWITCH_DEBUG" "$debug_mode" "Enable debug mode for zsh
 
 # Check if oh-my-zsh is sourced in .zshrc
 if ! grep -q "source \$ZSH/oh-my-zsh.sh" "$HOME/.zshrc"; then
-  echo "Warning: oh-my-zsh.sh is not sourced in your .zshrc"
+  echo "⚠️ Warning: oh-my-zsh.sh is not sourced in your .zshrc"
   echo "Adding 'source \$ZSH/oh-my-zsh.sh' to your .zshrc"
   echo "source \$ZSH/oh-my-zsh.sh" >> "$HOME/.zshrc"
 fi
 
-# Add the plugin to existing plugins list or create a new one
-if grep -q "^plugins=(" "$HOME/.zshrc"; then
-  # Check if the plugin is already in the list
-  if grep -q "plugins=.*$PLUGIN_NAME" "$HOME/.zshrc"; then
-    echo "Plugin already in plugins list in .zshrc"
-  else
-    # Replace the plugins line with a new one that includes our plugin
-    sed -i.bak "s/^plugins=(/plugins=($PLUGIN_NAME /" "$HOME/.zshrc"
-    echo "Added plugin to existing plugins list in .zshrc"
+# Function to add plugin to plugins array in .zshrc
+add_plugin_to_zshrc() {
+  local zshrc="$HOME/.zshrc"
+  local plugin_name="$1"
+  local plugins_added=0
+
+  # Check if plugins array exists
+  if grep -q "^plugins=(" "$zshrc"; then
+    # Check if the plugin is already in the list
+    if grep -q "plugins=.*$plugin_name" "$zshrc"; then
+      echo "✅ Plugin already in plugins array in .zshrc"
+      plugins_added=1
+    else
+      # Try to add the plugin to the existing plugins array
+      # First, attempt to add it at the end of a single-line plugins definition
+      if grep -q "^plugins=([^)]*)" "$zshrc"; then
+        sed -i.bak "s/^plugins=(\([^)]*\))/plugins=(\1 $plugin_name)/" "$zshrc"
+        if grep -q "plugins=.*$plugin_name" "$zshrc"; then
+          echo "✅ Added plugin to existing plugins array in .zshrc"
+          plugins_added=1
+        fi
+      fi
+      
+      # If that didn't work, try to add it to a multi-line plugins definition
+      if [[ "$plugins_added" -eq 0 ]]; then
+        # Find the line number of the closing parenthesis of the plugins array
+        local closing_line=$(grep -n "^)" "$zshrc" | head -1 | cut -d':' -f1)
+        if [[ -n "$closing_line" ]]; then
+          # Insert the plugin before the closing parenthesis
+          sed -i.bak "${closing_line}i\\  $plugin_name" "$zshrc"
+          if grep -q "$plugin_name" "$zshrc"; then
+            echo "✅ Added plugin to multi-line plugins array in .zshrc"
+            plugins_added=1
+          fi
+        fi
+      fi
+    fi
   fi
-else
-  # No plugins line exists, add it
-  echo "plugins=($PLUGIN_NAME)" >> "$HOME/.zshrc"
-  echo "Added new plugins line to .zshrc"
-fi
+  
+  # If no plugins array found or couldn't add to existing one, create a new plugins array
+  if [[ "$plugins_added" -eq 0 ]]; then
+    echo "⚠️ Warning: Could not find or modify existing plugins array in .zshrc"
+    echo "Adding a new plugins array with this plugin"
+    echo "" >> "$zshrc"
+    echo "# Added by $plugin_name installer" >> "$zshrc"
+    echo "plugins=($plugin_name)" >> "$zshrc"
+    if grep -q "plugins=.*$plugin_name" "$zshrc"; then
+      echo "✅ Created new plugins array in .zshrc"
+      plugins_added=1
+    else
+      echo "❌ Error: Failed to add plugin to .zshrc"
+      echo "Please manually add the following line to your .zshrc:"
+      echo "plugins=($plugin_name)"
+    fi
+  fi
+  
+  return $((1 - plugins_added))
+}
+
+# Add the plugin to the plugins array
+add_plugin_to_zshrc "$PLUGIN_NAME"
 
 if [[ "$UNATTENDED" -eq 0 ]]; then
   echo ""
