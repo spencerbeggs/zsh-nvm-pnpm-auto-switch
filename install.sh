@@ -46,8 +46,39 @@ chmod +x "$PLUGIN_DIR/$PLUGIN_NAME.plugin.zsh"
 # Skip configuration if it's an update and we're in unattended mode
 if [[ "$PLUGIN_INSTALLED" -eq 1 && "$UNATTENDED" -eq 1 ]]; then
   echo "🔄 Updated plugin files successfully!"
-  echo "Run 'node_auto_switch_configure' if you want to change your settings."
+  echo "Run 'nvm_pnpm_auto_switch_configure' if you want to change your settings."
   exit 0
+fi
+
+# Handle conversion from old environment variables if present
+if [[ -f "$HOME/.zshenv" ]]; then
+  if grep -q "NODE_AUTO_SWITCH_WORKSPACE" "$HOME/.zshenv"; then
+    # Get existing values from old variables
+    existing_workspace=$(grep "^export NODE_AUTO_SWITCH_WORKSPACE=" "$HOME/.zshenv" | sed 's/^export NODE_AUTO_SWITCH_WORKSPACE="\(.*\)".*$/\1/')
+    existing_list_projects=$(grep "^export NODE_AUTO_SWITCH_LIST_PROJECTS=" "$HOME/.zshenv" | sed 's/^export NODE_AUTO_SWITCH_LIST_PROJECTS=\(.*\) #.*$/\1/')
+    existing_debug=$(grep "^export NODE_AUTO_SWITCH_DEBUG=" "$HOME/.zshenv" | sed 's/^export NODE_AUTO_SWITCH_DEBUG=\(.*\) #.*$/\1/')
+    
+    # Use old values as defaults if present
+    [[ -n "$existing_workspace" ]] && DEFAULT_WORKSPACE="$existing_workspace"
+    [[ -n "$existing_list_projects" ]] && DEFAULT_LIST_PROJECTS="$existing_list_projects"
+    [[ -n "$existing_debug" ]] && DEFAULT_DEBUG="$existing_debug"
+    
+    # Add message about variable conversion
+    if [[ "$UNATTENDED" -eq 0 ]]; then
+      echo "📢 Converting from old environment variables to new naming convention..."
+    fi
+  fi
+fi
+
+# Read existing values from .zshenv if present (new variable names)
+if [[ -f "$HOME/.zshenv" ]]; then
+  existing_workspace=$(grep "^export NVM_PNPM_AUTO_SWITCH_WORKSPACE=" "$HOME/.zshenv" | sed 's/^export NVM_PNPM_AUTO_SWITCH_WORKSPACE="\(.*\)".*$/\1/')
+  existing_list_projects=$(grep "^export NVM_PNPM_AUTO_SWITCH_LIST_PROJECTS=" "$HOME/.zshenv" | sed 's/^export NVM_PNPM_AUTO_SWITCH_LIST_PROJECTS=\(.*\) #.*$/\1/')
+  existing_debug=$(grep "^export NVM_PNPM_AUTO_SWITCH_DEBUG=" "$HOME/.zshenv" | sed 's/^export NVM_PNPM_AUTO_SWITCH_DEBUG=\(.*\) #.*$/\1/')
+  
+  [[ -n "$existing_workspace" ]] && DEFAULT_WORKSPACE="$existing_workspace"
+  [[ -n "$existing_list_projects" ]] && DEFAULT_LIST_PROJECTS="$existing_list_projects"
+  [[ -n "$existing_debug" ]] && DEFAULT_DEBUG="$existing_debug"
 fi
 
 # Interactive configuration unless unattended
@@ -58,7 +89,7 @@ if [[ "$UNATTENDED" -eq 0 ]]; then
     read update_config
     if [[ "$update_config" != "y" && "$update_config" != "Y" ]]; then
       echo "✅ Plugin updated without changing your configuration."
-      echo "Run 'node_auto_switch_configure' if you want to change your settings later."
+      echo "Run 'nvm_pnpm_auto_switch_configure' if you want to change your settings later."
       exit 0
     fi
   fi
@@ -66,17 +97,6 @@ if [[ "$UNATTENDED" -eq 0 ]]; then
   echo "🔧 zsh-nvm-pnpm-auto-switch - Interactive Setup"
   echo "========================================"
   echo ""
-  
-  # Read existing values from .zshenv if present
-  if [[ -f "$HOME/.zshenv" ]]; then
-    existing_workspace=$(grep "^export NODE_AUTO_SWITCH_WORKSPACE=" "$HOME/.zshenv" | sed 's/^export NODE_AUTO_SWITCH_WORKSPACE="\(.*\)".*$/\1/')
-    existing_list_projects=$(grep "^export NODE_AUTO_SWITCH_LIST_PROJECTS=" "$HOME/.zshenv" | sed 's/^export NODE_AUTO_SWITCH_LIST_PROJECTS=\(.*\) #.*$/\1/')
-    existing_debug=$(grep "^export NODE_AUTO_SWITCH_DEBUG=" "$HOME/.zshenv" | sed 's/^export NODE_AUTO_SWITCH_DEBUG=\(.*\) #.*$/\1/')
-    
-    [[ -n "$existing_workspace" ]] && DEFAULT_WORKSPACE="$existing_workspace"
-    [[ -n "$existing_list_projects" ]] && DEFAULT_LIST_PROJECTS="$existing_list_projects"
-    [[ -n "$existing_debug" ]] && DEFAULT_DEBUG="$existing_debug"
-  fi
   
   # Ask for workspace directory
   echo "📂 What is your preferred workspace directory?"
@@ -104,16 +124,6 @@ if [[ "$UNATTENDED" -eq 0 ]]; then
   debug_mode=${debug_mode:-$DEFAULT_DEBUG}
 else
   # Use defaults or existing values in unattended mode
-  if [[ -f "$HOME/.zshenv" ]]; then
-    existing_workspace=$(grep "^export NODE_AUTO_SWITCH_WORKSPACE=" "$HOME/.zshenv" | sed 's/^export NODE_AUTO_SWITCH_WORKSPACE="\(.*\)".*$/\1/')
-    existing_list_projects=$(grep "^export NODE_AUTO_SWITCH_LIST_PROJECTS=" "$HOME/.zshenv" | sed 's/^export NODE_AUTO_SWITCH_LIST_PROJECTS=\(.*\) #.*$/\1/')
-    existing_debug=$(grep "^export NODE_AUTO_SWITCH_DEBUG=" "$HOME/.zshenv" | sed 's/^export NODE_AUTO_SWITCH_DEBUG=\(.*\) #.*$/\1/')
-    
-    [[ -n "$existing_workspace" ]] && DEFAULT_WORKSPACE="$existing_workspace"
-    [[ -n "$existing_list_projects" ]] && DEFAULT_LIST_PROJECTS="$existing_list_projects"
-    [[ -n "$existing_debug" ]] && DEFAULT_DEBUG="$existing_debug"
-  fi
-  
   workspace_dir=$DEFAULT_WORKSPACE
   list_projects=$DEFAULT_LIST_PROJECTS
   debug_mode=$DEFAULT_DEBUG
@@ -143,9 +153,19 @@ update_env_var() {
 }
 
 # Update environment variables
-update_env_var "NODE_AUTO_SWITCH_WORKSPACE" "$workspace_dir" "Workspace directory for zsh-nvm-pnpm-auto-switch plugin"
-update_env_var "NODE_AUTO_SWITCH_LIST_PROJECTS" "$list_projects" "Enable project listing in workspace (0=off, 1=on)"
-update_env_var "NODE_AUTO_SWITCH_DEBUG" "$debug_mode" "Enable debug mode for zsh-nvm-pnpm-auto-switch (0=off, 1=on)"
+update_env_var "NVM_PNPM_AUTO_SWITCH_WORKSPACE" "$workspace_dir" "Workspace directory for zsh-nvm-pnpm-auto-switch plugin"
+update_env_var "NVM_PNPM_AUTO_SWITCH_LIST_PROJECTS" "$list_projects" "Enable project listing in workspace (0=off, 1=on)"
+update_env_var "NVM_PNPM_AUTO_SWITCH_DEBUG" "$debug_mode" "Enable debug mode for zsh-nvm-pnpm-auto-switch (0=off, 1=on)"
+
+# Remove old environment variables if they exist
+if grep -q "NODE_AUTO_SWITCH_WORKSPACE" "$ZSHENV"; then
+  sed -i.bak '/NODE_AUTO_SWITCH_WORKSPACE/d' "$ZSHENV"
+  sed -i.bak '/NODE_AUTO_SWITCH_LIST_PROJECTS/d' "$ZSHENV"
+  sed -i.bak '/NODE_AUTO_SWITCH_DEBUG/d' "$ZSHENV"
+  if [[ "$UNATTENDED" -eq 0 ]]; then
+    echo "🧹 Removed old environment variables."
+  fi
+fi
 
 # Check if oh-my-zsh is sourced in .zshrc
 if ! grep -q "source \$ZSH/oh-my-zsh.sh" "$HOME/.zshrc"; then

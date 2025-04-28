@@ -109,13 +109,13 @@ During an update, you'll be asked if you want to reconfigure your settings or ke
 4. Add the required environment variables to your `.zshenv`:
    ```bash
    # Workspace directory for zsh-nvm-pnpm-auto-switch plugin
-   export NODE_AUTO_SWITCH_WORKSPACE="$HOME/workspace"
+   export NVM_PNPM_AUTO_SWITCH_WORKSPACE="$HOME/workspace"
 
    # Enable project listing in workspace (0=off, 1=on)
-   export NODE_AUTO_SWITCH_LIST_PROJECTS=0
+   export NVM_PNPM_AUTO_SWITCH_LIST_PROJECTS=0
 
    # Enable debug mode for zsh-nvm-pnpm-auto-switch (0=off, 1=on)
-   export NODE_AUTO_SWITCH_DEBUG=0
+   export NVM_PNPM_AUTO_SWITCH_DEBUG=0
    ```
 
 5. Restart your shell or run:
@@ -141,7 +141,7 @@ The plugin provides several commands to control its behavior:
 
 ```bash
 # Run the interactive configuration wizard
-node_auto_switch_configure
+nvm_pnpm_auto_switch_configure
 ```
 
 This command launches an interactive configuration wizard that helps you set up or change the plugin's settings. It shows current settings and allows you to update them with guided prompts. Changes are saved to your `.zshenv` file automatically.
@@ -150,25 +150,38 @@ This command launches an interactive configuration wizard that helps you set up 
 
 ```bash
 # Set the workspace directory for the current session
-node_auto_switch_workspace ~/dev
+nvm_pnpm_auto_switch_workspace ~/dev
 
 # Check the current workspace directory
-node_auto_switch_workspace
+nvm_pnpm_auto_switch_workspace
 ```
 
 #### Project Listing
 
 ```bash
 # Toggle project listing on/off
-node_auto_switch_list_projects
+nvm_pnpm_auto_switch_list_projects
 ```
 
 #### Debugging
 
 ```bash
 # Toggle debug mode on/off
-node_auto_switch_debug
+nvm_pnpm_auto_switch_debug
 ```
+
+### Backwards Compatibility
+
+For backwards compatibility, the plugin provides aliases for the old command names:
+
+```bash
+alias node_auto_switch_debug="nvm_pnpm_auto_switch_debug"
+alias node_auto_switch_list_projects="nvm_pnpm_auto_switch_list_projects"
+alias node_auto_switch_workspace="nvm_pnpm_auto_switch_workspace"
+alias node_auto_switch_configure="nvm_pnpm_auto_switch_configure"
+```
+
+These aliases allow you to continue using the old command names if you prefer.
 
 ## Example Files
 

@@ -2,46 +2,46 @@
 # zsh-nvm-pnpm-auto-switch.plugin.zsh - Automatic Node.js version and pnpm package manager switcher
 
 # Define variables to control plugin behavior
-NODE_AUTO_SWITCH_DEBUG=${NODE_AUTO_SWITCH_DEBUG:-0}
-export NODE_AUTO_SWITCH_WORKSPACE=${NODE_AUTO_SWITCH_WORKSPACE:-"$HOME/workspace"}
-export NODE_AUTO_SWITCH_LIST_PROJECTS=${NODE_AUTO_SWITCH_LIST_PROJECTS:-0}
+NVM_PNPM_AUTO_SWITCH_DEBUG=${NVM_PNPM_AUTO_SWITCH_DEBUG:-0}
+export NVM_PNPM_AUTO_SWITCH_WORKSPACE=${NVM_PNPM_AUTO_SWITCH_WORKSPACE:-"$HOME/workspace"}
+export NVM_PNPM_AUTO_SWITCH_LIST_PROJECTS=${NVM_PNPM_AUTO_SWITCH_LIST_PROJECTS:-0}
 
 # Debug output function
-_node_auto_switch_debug() {
-  if [[ "$NODE_AUTO_SWITCH_DEBUG" == "1" ]]; then
+_nvm_pnpm_auto_switch_debug() {
+  if [[ "$NVM_PNPM_AUTO_SWITCH_DEBUG" == "1" ]]; then
     echo "[zsh-nvm-pnpm-auto-switch] $1"
   fi
 }
 
 # Function to detect and switch Node.js environment when changing directories
-node_auto_switch() {
+nvm_pnpm_auto_switch() {
   local current_path=$(pwd)
   
   # Check if we're in the workspace directory and source our workspace config
-  if [[ "$current_path" == "$NODE_AUTO_SWITCH_WORKSPACE" ]]; then
-    _node_auto_switch_debug "In workspace directory: $NODE_AUTO_SWITCH_WORKSPACE"
+  if [[ "$current_path" == "$NVM_PNPM_AUTO_SWITCH_WORKSPACE" ]]; then
+    _nvm_pnpm_auto_switch_debug "In workspace directory: $NVM_PNPM_AUTO_SWITCH_WORKSPACE"
     local workspace_config="$ZSH_CUSTOM/plugins/zsh-nvm-pnpm-auto-switch/workspace-config.zsh"
     if [[ -f "$workspace_config" ]]; then
-      _node_auto_switch_debug "Sourcing workspace config"
+      _nvm_pnpm_auto_switch_debug "Sourcing workspace config"
       source "$workspace_config"
     fi
   fi
 
   # Check if we're in a Node.js package directory
   if [[ -f "package.json" ]]; then
-    _node_auto_switch_debug "Node.js project detected"
+    _nvm_pnpm_auto_switch_debug "Node.js project detected"
     local current_node_version=$(node -v 2>/dev/null || echo "none")
     local desired_node_version=""
     local packageManager=""
     
     # Check for .npmrc file with Node.js version
     if [[ -f ".npmrc" ]]; then
-      _node_auto_switch_debug ".npmrc file found"
+      _nvm_pnpm_auto_switch_debug ".npmrc file found"
       desired_node_version=$(grep "node-version" .npmrc | cut -d'=' -f2 | tr -d '[:space:]')
       
       # If we found a desired Node.js version
       if [[ -n "$desired_node_version" ]]; then
-        _node_auto_switch_debug "Found node-version=$desired_node_version in .npmrc"
+        _nvm_pnpm_auto_switch_debug "Found node-version=$desired_node_version in .npmrc"
         
         # Add 'v' prefix if it doesn't have one
         if [[ ! "$desired_node_version" =~ ^v ]]; then
@@ -61,13 +61,13 @@ node_auto_switch() {
           # Switch to the desired version
           nvm use "$desired_node_version" &>/dev/null
         else
-          _node_auto_switch_debug "Already using correct Node.js version: $current_node_version"
+          _nvm_pnpm_auto_switch_debug "Already using correct Node.js version: $current_node_version"
         fi
       else
-        _node_auto_switch_debug "No node-version found in .npmrc"
+        _nvm_pnpm_auto_switch_debug "No node-version found in .npmrc"
       fi
     else
-      _node_auto_switch_debug "No .npmrc file found"
+      _nvm_pnpm_auto_switch_debug "No .npmrc file found"
     fi
     
     # Get the package manager from package.json
@@ -76,89 +76,89 @@ node_auto_switch() {
       
       # If pnpm is the package manager, ensure corepack is enabled
       if [[ "$packageManager" == "pnpm" ]]; then
-        _node_auto_switch_debug "pnpm detected as package manager"
+        _nvm_pnpm_auto_switch_debug "pnpm detected as package manager"
         
         # Check if corepack is enabled
         if ! corepack --version &>/dev/null; then
           echo "🔧 Enabling corepack"
           corepack enable &>/dev/null
         else
-          _node_auto_switch_debug "Corepack is already enabled"
+          _nvm_pnpm_auto_switch_debug "Corepack is already enabled"
         fi
         
         # Get desired pnpm version
         local desired_pnpm_version=$(grep -o '"packageManager":[^,}]*' package.json 2>/dev/null | cut -d'"' -f4 | cut -d'@' -f2)
         local current_pnpm_version=$(pnpm --version 2>/dev/null || echo "none")
         
-        _node_auto_switch_debug "Current pnpm: $current_pnpm_version, Desired: $desired_pnpm_version"
+        _nvm_pnpm_auto_switch_debug "Current pnpm: $current_pnpm_version, Desired: $desired_pnpm_version"
         
         # Check if we need to switch pnpm version
         if [[ "$current_pnpm_version" != "$desired_pnpm_version" ]]; then
           echo "🔄 Activating pnpm@$desired_pnpm_version"
           corepack prepare pnpm@$desired_pnpm_version --activate &>/dev/null
         else
-          _node_auto_switch_debug "Already using correct pnpm version: $current_pnpm_version"
+          _nvm_pnpm_auto_switch_debug "Already using correct pnpm version: $current_pnpm_version"
         fi
       else
-        _node_auto_switch_debug "Package manager is not pnpm: $packageManager"
+        _nvm_pnpm_auto_switch_debug "Package manager is not pnpm: $packageManager"
       fi
     fi
   fi
 }
 
 # Function to toggle debug mode
-node_auto_switch_debug() {
-  if [[ "$NODE_AUTO_SWITCH_DEBUG" == "1" ]]; then
-    export NODE_AUTO_SWITCH_DEBUG=0
+nvm_pnpm_auto_switch_debug() {
+  if [[ "$NVM_PNPM_AUTO_SWITCH_DEBUG" == "1" ]]; then
+    export NVM_PNPM_AUTO_SWITCH_DEBUG=0
     echo "zsh-nvm-pnpm-auto-switch debug mode: OFF"
   else
-    export NODE_AUTO_SWITCH_DEBUG=1
+    export NVM_PNPM_AUTO_SWITCH_DEBUG=1
     echo "zsh-nvm-pnpm-auto-switch debug mode: ON"
   fi
 }
 
 # Function to toggle project listing
-node_auto_switch_list_projects() {
-  if [[ "$NODE_AUTO_SWITCH_LIST_PROJECTS" == "1" ]]; then
-    export NODE_AUTO_SWITCH_LIST_PROJECTS=0
+nvm_pnpm_auto_switch_list_projects() {
+  if [[ "$NVM_PNPM_AUTO_SWITCH_LIST_PROJECTS" == "1" ]]; then
+    export NVM_PNPM_AUTO_SWITCH_LIST_PROJECTS=0
     echo "zsh-nvm-pnpm-auto-switch project listing: OFF"
   else
-    export NODE_AUTO_SWITCH_LIST_PROJECTS=1
+    export NVM_PNPM_AUTO_SWITCH_LIST_PROJECTS=1
     echo "zsh-nvm-pnpm-auto-switch project listing: ON"
   fi
 }
 
 # Function to display and set workspace directory
-node_auto_switch_workspace() {
+nvm_pnpm_auto_switch_workspace() {
   if [[ -n "$1" ]]; then
-    export NODE_AUTO_SWITCH_WORKSPACE="$1"
-    echo "Workspace directory set to: $NODE_AUTO_SWITCH_WORKSPACE"
+    export NVM_PNPM_AUTO_SWITCH_WORKSPACE="$1"
+    echo "Workspace directory set to: $NVM_PNPM_AUTO_SWITCH_WORKSPACE"
   else
-    echo "Current workspace directory: $NODE_AUTO_SWITCH_WORKSPACE"
-    echo "To change it, run: node_auto_switch_workspace <new_path>"
+    echo "Current workspace directory: $NVM_PNPM_AUTO_SWITCH_WORKSPACE"
+    echo "To change it, run: nvm_pnpm_auto_switch_workspace <new_path>"
   fi
 }
 
 # Function to run interactive configuration
-node_auto_switch_configure() {
+nvm_pnpm_auto_switch_configure() {
   echo "🔧 zsh-nvm-pnpm-auto-switch - Interactive Configuration"
   echo "================================================="
   echo ""
   
   # Current settings
   echo "Current settings:"
-  echo "📂 Workspace directory: $NODE_AUTO_SWITCH_WORKSPACE"
-  echo "📋 Project listing: $([ "$NODE_AUTO_SWITCH_LIST_PROJECTS" -eq 1 ] && echo "enabled" || echo "disabled")"
-  echo "🐛 Debug mode: $([ "$NODE_AUTO_SWITCH_DEBUG" -eq 1 ] && echo "enabled" || echo "disabled")"
+  echo "📂 Workspace directory: $NVM_PNPM_AUTO_SWITCH_WORKSPACE"
+  echo "📋 Project listing: $([ "$NVM_PNPM_AUTO_SWITCH_LIST_PROJECTS" -eq 1 ] && echo "enabled" || echo "disabled")"
+  echo "🐛 Debug mode: $([ "$NVM_PNPM_AUTO_SWITCH_DEBUG" -eq 1 ] && echo "enabled" || echo "disabled")"
   echo ""
   
   # Ask for workspace directory
   echo "📂 What is your preferred workspace directory?"
-  echo "   Current: $NODE_AUTO_SWITCH_WORKSPACE"
+  echo "   Current: $NVM_PNPM_AUTO_SWITCH_WORKSPACE"
   echo -n "   New directory path (press Enter to keep current): "
   read new_workspace_dir
   if [[ -n "$new_workspace_dir" ]]; then
-    export NODE_AUTO_SWITCH_WORKSPACE="$new_workspace_dir"
+    export NVM_PNPM_AUTO_SWITCH_WORKSPACE="$new_workspace_dir"
   fi
   
   # Ask about project listing
@@ -166,11 +166,11 @@ node_auto_switch_configure() {
   echo "📋 Automatic project listing when entering your workspace?"
   echo "   This will show a list of available projects in your workspace directory."
   echo "   0 = Disabled (silent operation), 1 = Enabled"
-  echo "   Current: $NODE_AUTO_SWITCH_LIST_PROJECTS"
+  echo "   Current: $NVM_PNPM_AUTO_SWITCH_LIST_PROJECTS"
   echo -n "   Enable project listing? (0/1, press Enter to keep current): "
   read new_list_projects
   if [[ -n "$new_list_projects" ]]; then
-    export NODE_AUTO_SWITCH_LIST_PROJECTS="$new_list_projects"
+    export NVM_PNPM_AUTO_SWITCH_LIST_PROJECTS="$new_list_projects"
   fi
   
   # Ask about debug mode
@@ -178,18 +178,18 @@ node_auto_switch_configure() {
   echo "🐛 Debug mode?"
   echo "   This will show detailed debug information about the plugin's operations."
   echo "   0 = Disabled, 1 = Enabled"
-  echo "   Current: $NODE_AUTO_SWITCH_DEBUG"
+  echo "   Current: $NVM_PNPM_AUTO_SWITCH_DEBUG"
   echo -n "   Enable debug mode? (0/1, press Enter to keep current): "
   read new_debug_mode
   if [[ -n "$new_debug_mode" ]]; then
-    export NODE_AUTO_SWITCH_DEBUG="$new_debug_mode"
+    export NVM_PNPM_AUTO_SWITCH_DEBUG="$new_debug_mode"
   fi
   
   echo ""
   echo "Updated settings:"
-  echo "📂 Workspace directory: $NODE_AUTO_SWITCH_WORKSPACE"
-  echo "📋 Project listing: $([ "$NODE_AUTO_SWITCH_LIST_PROJECTS" -eq 1 ] && echo "enabled" || echo "disabled")"
-  echo "🐛 Debug mode: $([ "$NODE_AUTO_SWITCH_DEBUG" -eq 1 ] && echo "enabled" || echo "disabled")"
+  echo "📂 Workspace directory: $NVM_PNPM_AUTO_SWITCH_WORKSPACE"
+  echo "📋 Project listing: $([ "$NVM_PNPM_AUTO_SWITCH_LIST_PROJECTS" -eq 1 ] && echo "enabled" || echo "disabled")"
+  echo "🐛 Debug mode: $([ "$NVM_PNPM_AUTO_SWITCH_DEBUG" -eq 1 ] && echo "enabled" || echo "disabled")"
   
   # Update environment variables in .zshenv
   local ZSHENV="$HOME/.zshenv"
@@ -214,16 +214,22 @@ node_auto_switch_configure() {
   
   echo ""
   echo "Saving settings to ~/.zshenv..."
-  update_env_var "NODE_AUTO_SWITCH_WORKSPACE" "$NODE_AUTO_SWITCH_WORKSPACE" "Workspace directory for zsh-nvm-pnpm-auto-switch plugin"
-  update_env_var "NODE_AUTO_SWITCH_LIST_PROJECTS" "$NODE_AUTO_SWITCH_LIST_PROJECTS" "Enable project listing in workspace (0=off, 1=on)"
-  update_env_var "NODE_AUTO_SWITCH_DEBUG" "$NODE_AUTO_SWITCH_DEBUG" "Enable debug mode for zsh-nvm-pnpm-auto-switch (0=off, 1=on)"
+  update_env_var "NVM_PNPM_AUTO_SWITCH_WORKSPACE" "$NVM_PNPM_AUTO_SWITCH_WORKSPACE" "Workspace directory for zsh-nvm-pnpm-auto-switch plugin"
+  update_env_var "NVM_PNPM_AUTO_SWITCH_LIST_PROJECTS" "$NVM_PNPM_AUTO_SWITCH_LIST_PROJECTS" "Enable project listing in workspace (0=off, 1=on)"
+  update_env_var "NVM_PNPM_AUTO_SWITCH_DEBUG" "$NVM_PNPM_AUTO_SWITCH_DEBUG" "Enable debug mode for zsh-nvm-pnpm-auto-switch (0=off, 1=on)"
   
   echo "✅ Configuration saved successfully!"
 }
 
 # Add the function as a hook when directory changes
 autoload -U add-zsh-hook
-add-zsh-hook chpwd node_auto_switch
+add-zsh-hook chpwd nvm_pnpm_auto_switch
 
 # Run once when a shell session starts
-node_auto_switch
+nvm_pnpm_auto_switch
+
+# For backward compatibility, create aliases for old function names
+alias node_auto_switch_debug="nvm_pnpm_auto_switch_debug"
+alias node_auto_switch_list_projects="nvm_pnpm_auto_switch_list_projects"
+alias node_auto_switch_workspace="nvm_pnpm_auto_switch_workspace"
+alias node_auto_switch_configure="nvm_pnpm_auto_switch_configure"
