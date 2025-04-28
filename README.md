@@ -245,22 +245,7 @@ nvm_pnpm_auto_switch_uninstall
 
 If you no longer want to use the plugin, this command will completely remove it and clean up all related files and settings. It will ask for confirmation before proceeding.
 
-### Backwards Compatibility
 
-For backwards compatibility, the plugin provides aliases for the old command names:
-
-```bash
-alias node_auto_switch_debug="nvm_pnpm_auto_switch_debug"
-alias node_auto_switch_list_projects="nvm_pnpm_auto_switch_list_projects"
-alias node_auto_switch_workspace="nvm_pnpm_auto_switch_workspace"
-alias node_auto_switch_configure="nvm_pnpm_auto_switch_configure"
-alias node_auto_switch_help="nvm_pnpm_auto_switch_help"
-alias node_auto_switch_man="nvm_pnpm_auto_switch_help"
-alias node_auto_switch_update="nvm_pnpm_auto_switch_update"
-alias node_auto_switch_uninstall="nvm_pnpm_auto_switch_uninstall"
-```
-
-These aliases allow you to continue using the old command names if you prefer.
 
 ## Environment Variables
 

@@ -196,11 +196,6 @@ nvm_pnpm_auto_switch_uninstall() {
     sed -i.bak '/NVM_PNPM_AUTO_SWITCH_WORKSPACE/d' "$HOME/.zshenv"
     sed -i.bak '/NVM_PNPM_AUTO_SWITCH_LIST_PROJECTS/d' "$HOME/.zshenv"
     sed -i.bak '/NVM_PNPM_AUTO_SWITCH_DEBUG/d' "$HOME/.zshenv"
-    
-    # Also clean up old variables if they exist
-    sed -i.bak '/NODE_AUTO_SWITCH_WORKSPACE/d' "$HOME/.zshenv"
-    sed -i.bak '/NODE_AUTO_SWITCH_LIST_PROJECTS/d' "$HOME/.zshenv"
-    sed -i.bak '/NODE_AUTO_SWITCH_DEBUG/d' "$HOME/.zshenv"
   fi
   
   # Remove plugin from plugins array in .zshrc
@@ -401,13 +396,3 @@ nvm_pnpm_auto_switch
 
 # Alias 'man' to 'help' for easier discovery
 alias nvm_pnpm_auto_switch_man="nvm_pnpm_auto_switch_help"
-
-# For backward compatibility, create aliases for old function names
-alias node_auto_switch_debug="nvm_pnpm_auto_switch_debug"
-alias node_auto_switch_list_projects="nvm_pnpm_auto_switch_list_projects"
-alias node_auto_switch_workspace="nvm_pnpm_auto_switch_workspace"
-alias node_auto_switch_configure="nvm_pnpm_auto_switch_configure"
-alias node_auto_switch_help="nvm_pnpm_auto_switch_help"
-alias node_auto_switch_man="nvm_pnpm_auto_switch_help"
-alias node_auto_switch_update="nvm_pnpm_auto_switch_update"
-alias node_auto_switch_uninstall="nvm_pnpm_auto_switch_uninstall"
