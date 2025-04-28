@@ -12,6 +12,7 @@ A ZSH plugin that automatically switches Node.js versions (using `nvm`) and mana
 - 😶 Silent operation by default - only shows messages when needed
 - ⚙️ Interactive configuration via command line
 - 🔁 Smart installation/update process that preserves existing settings
+- 📖 Built-in help system with detailed command documentation
 
 ## Requirements
 
@@ -133,11 +134,32 @@ Once installed, the plugin works automatically:
 
 The plugin only displays messages when it needs to switch Node.js versions or update package managers.
 
-### Configuration Commands
+## Available Commands
 
-The plugin provides several commands to control its behavior:
+After installation, the following commands are available to help you manage the plugin:
 
-#### Interactive Configuration
+| Command | Description |
+|---------|-------------|
+| `nvm_pnpm_auto_switch_help` | Display detailed help information about all available commands |
+| `nvm_pnpm_auto_switch_man` | Alias for `nvm_pnpm_auto_switch_help` |
+| `nvm_pnpm_auto_switch_configure` | Run the interactive configuration wizard |
+| `nvm_pnpm_auto_switch_workspace [path]` | View or change the workspace directory |
+| `nvm_pnpm_auto_switch_list_projects` | Toggle automatic project listing on/off |
+| `nvm_pnpm_auto_switch_debug` | Toggle debug mode on/off |
+
+### Help and Documentation
+
+```bash
+# Display full help information
+nvm_pnpm_auto_switch_help
+
+# Alias for help (same as above)
+nvm_pnpm_auto_switch_man
+```
+
+The help command provides detailed information about all available commands and environment variables. It's a great starting point if you're new to the plugin or need a refresher on what commands are available.
+
+### Interactive Configuration
 
 ```bash
 # Run the interactive configuration wizard
@@ -146,29 +168,35 @@ nvm_pnpm_auto_switch_configure
 
 This command launches an interactive configuration wizard that helps you set up or change the plugin's settings. It shows current settings and allows you to update them with guided prompts. Changes are saved to your `.zshenv` file automatically.
 
-#### Workspace Directory
+### Workspace Directory Management
 
 ```bash
-# Set the workspace directory for the current session
-nvm_pnpm_auto_switch_workspace ~/dev
-
 # Check the current workspace directory
 nvm_pnpm_auto_switch_workspace
+
+# Set a new workspace directory
+nvm_pnpm_auto_switch_workspace ~/dev
 ```
 
-#### Project Listing
+The workspace directory is a special directory where you can enable additional features like project listing. By default, this is set to `~/workspace`, but you can change it to any directory you prefer.
+
+### Project Listing Control
 
 ```bash
 # Toggle project listing on/off
 nvm_pnpm_auto_switch_list_projects
 ```
 
-#### Debugging
+When project listing is enabled, the plugin will display a list of available projects when you enter your workspace directory. This is useful for quickly seeing what projects are available.
+
+### Debug Mode
 
 ```bash
 # Toggle debug mode on/off
 nvm_pnpm_auto_switch_debug
 ```
+
+Debug mode provides detailed information about what the plugin is doing, which can be helpful for troubleshooting. When enabled, you'll see messages about detected Node.js versions, package managers, and more.
 
 ### Backwards Compatibility
 
@@ -179,9 +207,23 @@ alias node_auto_switch_debug="nvm_pnpm_auto_switch_debug"
 alias node_auto_switch_list_projects="nvm_pnpm_auto_switch_list_projects"
 alias node_auto_switch_workspace="nvm_pnpm_auto_switch_workspace"
 alias node_auto_switch_configure="nvm_pnpm_auto_switch_configure"
+alias node_auto_switch_help="nvm_pnpm_auto_switch_help"
+alias node_auto_switch_man="nvm_pnpm_auto_switch_help"
 ```
 
 These aliases allow you to continue using the old command names if you prefer.
+
+## Environment Variables
+
+The plugin uses the following environment variables to control its behavior:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `NVM_PNPM_AUTO_SWITCH_WORKSPACE` | Path to your workspace directory | `$HOME/workspace` |
+| `NVM_PNPM_AUTO_SWITCH_LIST_PROJECTS` | Enable project listing in workspace (0=off, 1=on) | `0` |
+| `NVM_PNPM_AUTO_SWITCH_DEBUG` | Enable debug mode (0=off, 1=on) | `0` |
+
+You can set these variables in your `.zshenv` file manually, or use the `nvm_pnpm_auto_switch_configure` command to set them interactively.
 
 ## Example Files
 

@@ -139,6 +139,47 @@ nvm_pnpm_auto_switch_workspace() {
   fi
 }
 
+# Function to show help information
+nvm_pnpm_auto_switch_help() {
+  echo "🚀 zsh-nvm-pnpm-auto-switch - Help"
+  echo "======================================"
+  echo ""
+  echo "This plugin automatically switches Node.js versions and manages pnpm package"
+  echo "manager versions when changing directories."
+  echo ""
+  echo "Available Commands:"
+  echo ""
+  echo "  nvm_pnpm_auto_switch_configure"
+  echo "    Run the interactive configuration wizard to set up or update your settings."
+  echo ""
+  echo "  nvm_pnpm_auto_switch_workspace [path]"
+  echo "    Without arguments, shows the current workspace directory."
+  echo "    With a path argument, sets the workspace directory to the specified path."
+  echo ""
+  echo "  nvm_pnpm_auto_switch_list_projects"
+  echo "    Toggle automatic project listing when entering your workspace directory."
+  echo ""
+  echo "  nvm_pnpm_auto_switch_debug"
+  echo "    Toggle debug mode to show/hide detailed operation information."
+  echo ""
+  echo "  nvm_pnpm_auto_switch_help"
+  echo "    Display this help information."
+  echo ""
+  echo "Environment Variables:"
+  echo ""
+  echo "  NVM_PNPM_AUTO_SWITCH_WORKSPACE"
+  echo "    Path to your workspace directory. Default: $HOME/workspace"
+  echo ""
+  echo "  NVM_PNPM_AUTO_SWITCH_LIST_PROJECTS"
+  echo "    Enable project listing in workspace (0=off, 1=on). Default: 0"
+  echo ""
+  echo "  NVM_PNPM_AUTO_SWITCH_DEBUG"
+  echo "    Enable debug mode (0=off, 1=on). Default: 0"
+  echo ""
+  echo "For more information, visit:"
+  echo "https://github.com/spencerbeggs/zsh-nvm-pnpm-auto-switch"
+}
+
 # Function to run interactive configuration
 nvm_pnpm_auto_switch_configure() {
   echo "🔧 zsh-nvm-pnpm-auto-switch - Interactive Configuration"
@@ -228,8 +269,13 @@ add-zsh-hook chpwd nvm_pnpm_auto_switch
 # Run once when a shell session starts
 nvm_pnpm_auto_switch
 
+# Alias 'man' to 'help' for easier discovery
+alias nvm_pnpm_auto_switch_man="nvm_pnpm_auto_switch_help"
+
 # For backward compatibility, create aliases for old function names
 alias node_auto_switch_debug="nvm_pnpm_auto_switch_debug"
 alias node_auto_switch_list_projects="nvm_pnpm_auto_switch_list_projects"
 alias node_auto_switch_workspace="nvm_pnpm_auto_switch_workspace"
 alias node_auto_switch_configure="nvm_pnpm_auto_switch_configure"
+alias node_auto_switch_help="nvm_pnpm_auto_switch_help"
+alias node_auto_switch_man="nvm_pnpm_auto_switch_help"
