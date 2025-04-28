@@ -45,7 +45,7 @@ chmod +x "$PLUGIN_DIR/$PLUGIN_NAME.plugin.zsh"
 
 # Skip configuration if it's an update and we're in unattended mode
 if [[ "$PLUGIN_INSTALLED" -eq 1 && "$UNATTENDED" -eq 1 ]]; then
-  echo "🔄 Updated plugin files successfully!"
+  echo "🔄 Updated plugin files successfully."
   echo "Run 'nvm_pnpm_auto_switch_configure' if you want to change your settings."
   exit 0
 fi
@@ -83,6 +83,7 @@ fi
 
 # Interactive configuration unless unattended
 if [[ "$UNATTENDED" -eq 0 ]]; then
+  # Only ask about updating configuration if this is an update
   if [[ "$PLUGIN_INSTALLED" -eq 1 ]]; then
     echo "🔧 Would you like to update your plugin configuration?"
     echo -n "   (y/n, press Enter for n): "
@@ -127,7 +128,11 @@ else
   workspace_dir=$DEFAULT_WORKSPACE
   list_projects=$DEFAULT_LIST_PROJECTS
   debug_mode=$DEFAULT_DEBUG
-  echo "🤖 Running in unattended mode, using default or existing settings"
+  
+  # Only show message if this is a fresh install, not an update
+  if [[ "$PLUGIN_INSTALLED" -eq 0 ]]; then
+    echo "🤖 Running in unattended mode, using default or existing settings"
+  fi
 fi
 
 # Add environment variables to zshenv if they don't exist
@@ -184,7 +189,9 @@ add_plugin_to_zshrc() {
   if grep -q "^plugins=(" "$zshrc"; then
     # Check if the plugin is already in the list
     if grep -q "plugins=.*$plugin_name" "$zshrc"; then
-      echo "✅ Plugin already in plugins array in .zshrc"
+      if [[ "$UNATTENDED" -eq 0 ]]; then
+        echo "✅ Plugin already in plugins array in .zshrc"
+      fi
       plugins_added=1
     else
       # Try to add the plugin to the existing plugins array
@@ -192,7 +199,9 @@ add_plugin_to_zshrc() {
       if grep -q "^plugins=([^)]*)" "$zshrc"; then
         sed -i.bak "s/^plugins=(\([^)]*\))/plugins=(\1 $plugin_name)/" "$zshrc"
         if grep -q "plugins=.*$plugin_name" "$zshrc"; then
-          echo "✅ Added plugin to existing plugins array in .zshrc"
+          if [[ "$UNATTENDED" -eq 0 ]]; then
+            echo "✅ Added plugin to existing plugins array in .zshrc"
+          fi
           plugins_added=1
         fi
       fi
@@ -205,7 +214,9 @@ add_plugin_to_zshrc() {
           # Insert the plugin before the closing parenthesis
           sed -i.bak "${closing_line}i\\  $plugin_name" "$zshrc"
           if grep -q "$plugin_name" "$zshrc"; then
-            echo "✅ Added plugin to multi-line plugins array in .zshrc"
+            if [[ "$UNATTENDED" -eq 0 ]]; then
+              echo "✅ Added plugin to multi-line plugins array in .zshrc"
+            fi
             plugins_added=1
           fi
         fi
@@ -215,13 +226,17 @@ add_plugin_to_zshrc() {
   
   # If no plugins array found or couldn't add to existing one, create a new plugins array
   if [[ "$plugins_added" -eq 0 ]]; then
-    echo "⚠️ Warning: Could not find or modify existing plugins array in .zshrc"
-    echo "Adding a new plugins array with this plugin"
+    if [[ "$UNATTENDED" -eq 0 ]]; then
+      echo "⚠️ Warning: Could not find or modify existing plugins array in .zshrc"
+      echo "Adding a new plugins array with this plugin"
+    fi
     echo "" >> "$zshrc"
     echo "# Added by $plugin_name installer" >> "$zshrc"
     echo "plugins=($plugin_name)" >> "$zshrc"
     if grep -q "plugins=.*$plugin_name" "$zshrc"; then
-      echo "✅ Created new plugins array in .zshrc"
+      if [[ "$UNATTENDED" -eq 0 ]]; then
+        echo "✅ Created new plugins array in .zshrc"
+      fi
       plugins_added=1
     else
       echo "❌ Error: Failed to add plugin to .zshrc"
@@ -247,7 +262,7 @@ if [[ "$PLUGIN_INSTALLED" -eq 1 ]]; then
     echo "📋 Project listing: $([ "$list_projects" -eq 1 ] && echo "enabled" || echo "disabled")"
     echo "🐛 Debug mode: $([ "$debug_mode" -eq 1 ] && echo "enabled" || echo "disabled")"
   else
-    echo "✅ zsh-nvm-pnpm-auto-switch updated successfully with default settings!"
+    echo "✅ zsh-nvm-pnpm-auto-switch updated successfully."
   fi
 else
   if [[ "$UNATTENDED" -eq 0 ]]; then
@@ -257,9 +272,11 @@ else
     echo "📋 Project listing: $([ "$list_projects" -eq 1 ] && echo "enabled" || echo "disabled")"
     echo "🐛 Debug mode: $([ "$debug_mode" -eq 1 ] && echo "enabled" || echo "disabled")"
   else
-    echo "✅ zsh-nvm-pnpm-auto-switch installed successfully with default settings!"
+    echo "✅ zsh-nvm-pnpm-auto-switch installed successfully."
   fi
 fi
 
-echo ""
-echo "Restart your shell or run 'source ~/.zshrc' to activate the plugin."
+if [[ "$UNATTENDED" -eq 0 ]]; then
+  echo ""
+  echo "Restart your shell or run 'source ~/.zshrc' to activate the plugin."
+fi
