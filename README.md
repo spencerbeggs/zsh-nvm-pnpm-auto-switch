@@ -10,6 +10,7 @@ A ZSH plugin that automatically switches Node.js versions (using `nvm`) and mana
 - 🔧 Installs missing Node.js versions automatically when needed
 - 🏠 Special workspace directory integration with optional project listing
 - 😶 Silent operation by default - only shows messages when needed
+- ⚙️ Interactive configuration via command line
 
 ## Requirements
 
@@ -108,16 +109,20 @@ Once installed, the plugin works automatically:
 
 The plugin only displays messages when it needs to switch Node.js versions or update package managers.
 
-### Configuring Workspace Directory
+### Configuration Commands
 
-By default, the plugin uses `~/workspace` as your main workspace directory. You can customize this by setting the `NODE_AUTO_SWITCH_WORKSPACE` environment variable:
+The plugin provides several commands to control its behavior:
+
+#### Interactive Configuration
 
 ```bash
-# Set in your .zshrc or .zshenv
-export NODE_AUTO_SWITCH_WORKSPACE="$HOME/projects"
+# Run the interactive configuration wizard
+node_auto_switch_configure
 ```
 
-Alternatively, you can use the provided command:
+This command launches an interactive configuration wizard that helps you set up or change the plugin's settings. It shows current settings and allows you to update them with guided prompts. Changes are saved to your `.zshenv` file automatically.
+
+#### Workspace Directory
 
 ```bash
 # Set the workspace directory for the current session
@@ -127,34 +132,19 @@ node_auto_switch_workspace ~/dev
 node_auto_switch_workspace
 ```
 
-### Configuring Project Listing
-
-When entering your workspace directory, the plugin can automatically list available projects. This feature is disabled by default for a clean, silent experience. When disabled, no messages are shown at all when entering your workspace.
-
-To enable project listing:
-
-```bash
-# Set in your .zshrc or .zshenv (0 = off, 1 = on)
-export NODE_AUTO_SWITCH_LIST_PROJECTS=1
-```
-
-You can also toggle this feature using the provided command:
+#### Project Listing
 
 ```bash
 # Toggle project listing on/off
 node_auto_switch_list_projects
 ```
 
-### Debugging
-
-The plugin includes a debug mode to help troubleshoot issues:
+#### Debugging
 
 ```bash
 # Toggle debug mode on/off
 node_auto_switch_debug
 ```
-
-When debug mode is enabled, the plugin will output detailed information about what it's doing when you change directories, including in the workspace directory even if project listing is disabled.
 
 ## Example Files
 

@@ -139,6 +139,88 @@ node_auto_switch_workspace() {
   fi
 }
 
+# Function to run interactive configuration
+node_auto_switch_configure() {
+  echo "🔧 zsh-nvm-pnpm-auto-switch - Interactive Configuration"
+  echo "================================================="
+  echo ""
+  
+  # Current settings
+  echo "Current settings:"
+  echo "📂 Workspace directory: $NODE_AUTO_SWITCH_WORKSPACE"
+  echo "📋 Project listing: $([ "$NODE_AUTO_SWITCH_LIST_PROJECTS" -eq 1 ] && echo "enabled" || echo "disabled")"
+  echo "🐛 Debug mode: $([ "$NODE_AUTO_SWITCH_DEBUG" -eq 1 ] && echo "enabled" || echo "disabled")"
+  echo ""
+  
+  # Ask for workspace directory
+  echo "📂 What is your preferred workspace directory?"
+  echo "   Current: $NODE_AUTO_SWITCH_WORKSPACE"
+  echo -n "   New directory path (press Enter to keep current): "
+  read new_workspace_dir
+  if [[ -n "$new_workspace_dir" ]]; then
+    export NODE_AUTO_SWITCH_WORKSPACE="$new_workspace_dir"
+  fi
+  
+  # Ask about project listing
+  echo ""
+  echo "📋 Automatic project listing when entering your workspace?"
+  echo "   This will show a list of available projects in your workspace directory."
+  echo "   0 = Disabled (silent operation), 1 = Enabled"
+  echo "   Current: $NODE_AUTO_SWITCH_LIST_PROJECTS"
+  echo -n "   Enable project listing? (0/1, press Enter to keep current): "
+  read new_list_projects
+  if [[ -n "$new_list_projects" ]]; then
+    export NODE_AUTO_SWITCH_LIST_PROJECTS="$new_list_projects"
+  fi
+  
+  # Ask about debug mode
+  echo ""
+  echo "🐛 Debug mode?"
+  echo "   This will show detailed debug information about the plugin's operations."
+  echo "   0 = Disabled, 1 = Enabled"
+  echo "   Current: $NODE_AUTO_SWITCH_DEBUG"
+  echo -n "   Enable debug mode? (0/1, press Enter to keep current): "
+  read new_debug_mode
+  if [[ -n "$new_debug_mode" ]]; then
+    export NODE_AUTO_SWITCH_DEBUG="$new_debug_mode"
+  fi
+  
+  echo ""
+  echo "Updated settings:"
+  echo "📂 Workspace directory: $NODE_AUTO_SWITCH_WORKSPACE"
+  echo "📋 Project listing: $([ "$NODE_AUTO_SWITCH_LIST_PROJECTS" -eq 1 ] && echo "enabled" || echo "disabled")"
+  echo "🐛 Debug mode: $([ "$NODE_AUTO_SWITCH_DEBUG" -eq 1 ] && echo "enabled" || echo "disabled")"
+  
+  # Update environment variables in .zshenv
+  local ZSHENV="$HOME/.zshenv"
+  
+  # Function to update or add environment variable
+  update_env_var() {
+    local var_name="$1"
+    local var_value="$2"
+    local var_comment="$3"
+    
+    # Check if variable exists in file
+    if grep -q "^export $var_name=" "$ZSHENV"; then
+      # Update existing variable
+      sed -i.bak "s|^export $var_name=.*|export $var_name=\"$var_value\" # $var_comment|" "$ZSHENV"
+    else
+      # Add new variable
+      echo "" >> "$ZSHENV"
+      echo "# $var_comment" >> "$ZSHENV"
+      echo "export $var_name=\"$var_value\"" >> "$ZSHENV"
+    fi
+  }
+  
+  echo ""
+  echo "Saving settings to ~/.zshenv..."
+  update_env_var "NODE_AUTO_SWITCH_WORKSPACE" "$NODE_AUTO_SWITCH_WORKSPACE" "Workspace directory for zsh-nvm-pnpm-auto-switch plugin"
+  update_env_var "NODE_AUTO_SWITCH_LIST_PROJECTS" "$NODE_AUTO_SWITCH_LIST_PROJECTS" "Enable project listing in workspace (0=off, 1=on)"
+  update_env_var "NODE_AUTO_SWITCH_DEBUG" "$NODE_AUTO_SWITCH_DEBUG" "Enable debug mode for zsh-nvm-pnpm-auto-switch (0=off, 1=on)"
+  
+  echo "✅ Configuration saved successfully!"
+}
+
 # Add the function as a hook when directory changes
 autoload -U add-zsh-hook
 add-zsh-hook chpwd node_auto_switch
