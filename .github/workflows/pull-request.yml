@@ -1,0 +1,112 @@
+name: Validate
+
+on:
+    pull_request:
+        types: [opened, synchronize, reopened, edited]
+
+# Add permissions for checks
+permissions:
+    contents: read
+    pull-requests: write
+    checks: write
+
+jobs:
+    commitlint:
+        name: Conventional Commits
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  ref: ${{ github.event.pull_request.head.sha }}
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version-file: ".nvmrc"
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  run_install: false
+
+            - name: Get pnpm store directory
+              id: pnpm-cache
+              shell: bash
+              run: |
+                  echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+            - name: Setup pnpm cache
+              uses: actions/cache@v4
+              with:
+                  path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+                  key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+                  restore-keys: |
+                      ${{ runner.os }}-pnpm-store-
+
+            - name: Install dependencies
+              run: pnpm install
+
+            - name: Fetch base branch for comparison
+              run: |
+                  git fetch origin ${{ github.base_ref }}
+
+            - name: Validate Conventional Commits
+              run: |
+                  echo "Validating commit messages between origin/${{ github.base_ref }} and HEAD"
+                  pnpm commitlint --from=origin/${{ github.base_ref }} --to=HEAD --verbose
+
+    lint:
+        name: Code Quality
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  ref: ${{ github.event.pull_request.head.sha }}
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version-file: ".nvmrc"
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  run_install: false
+
+            - name: Get pnpm store directory
+              id: pnpm-cache
+              shell: bash
+              run: |
+                  echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+            - name: Setup pnpm cache
+              uses: actions/cache@v4
+              with:
+                  path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+                  key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+                  restore-keys: |
+                      ${{ runner.os }}-pnpm-store-
+
+            - name: Install dependencies
+              run: pnpm install
+
+            - name: Run ESLint
+              run: pnpm lint
+    verify-all:
+        name: Summary
+        needs: [commitlint, lint]
+        runs-on: ubuntu-latest
+        if: always()
+        steps:
+            - name: Check job statuses
+              run: |
+                  if [[ "${{ needs.commitlint.result }}" == "success" && "${{ needs.lint.result }}" == "success" ]]; then
+                    echo "All validation checks passed!"
+                    exit 0
+                  else
+                    echo "One or more validation checks failed. Please review the details in each job."
+                    exit 1
+                  fi

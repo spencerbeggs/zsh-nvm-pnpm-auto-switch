@@ -1,0 +1,42 @@
+{
+    "editor.formatOnSave": true,
+    "eslint.enable": true,
+    "files.exclude": {
+      "**/.turbo": true,
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/.coverage": true,
+      "**/.vitest": true,
+      "**/.docusaurus": true,
+      "**/.certificates": true
+    },
+    "eslint.debug": true,
+    "eslint.validate": ["javascript", "typescript", "typescriptreact", "json"],
+    "[typescript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.formatOnSave": true,
+      "editor.codeActionsOnSave": {
+        "source.fixAll": "explicit",
+        "source.organizeImports": "never"
+      }
+    },
+    "[typescriptreact]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.formatOnSave": true
+    },
+    "[json]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.formatOnSave": true
+    },
+    "search.exclude": {
+      "**/.turbo": true,
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/.coverage": true,
+      "**/.vitest": true,
+      "**/.docusaurus": true,
+      "**/.certificates": true
+    },
+    "markdown-preview-github-styles.colorTheme": "light"
+  }
+  
