@@ -36,21 +36,21 @@ You can install the plugin directly from GitHub using one of the following metho
 git clone https://github.com/spencerbeggs/zsh-nvm-pnpm-auto-switch.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch
 
 # Run the interactive installation script
-${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch/install.sh
+${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch/src/install.sh
 ```
 
 #### Using curl
 
 ```bash
 # Download and run the installer script
-curl -fsSL https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-switch/main/install-remote.sh | zsh
+curl -fsSL https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-switch/main/src/install-remote.sh | zsh
 ```
 
 #### Using wget
 
 ```bash
 # Download and run the installer script
-wget -O- https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-switch/main/install-remote.sh | zsh
+wget -O- https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-switch/main/src/install-remote.sh | zsh
 ```
 
 ### Unattended Installation
@@ -61,19 +61,19 @@ For automated/unattended installation (using default settings):
 
 ```bash
 git clone https://github.com/spencerbeggs/zsh-nvm-pnpm-auto-switch.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch
-${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch/install.sh --unattended
+${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch/src/install.sh --unattended
 ```
 
 #### curl unattended installation
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-switch/main/install-remote.sh | zsh -s -- --unattended
+curl -fsSL https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-switch/main/src/install-remote.sh | zsh -s -- --unattended
 ```
 
 #### wget unattended installation
 
 ```bash
-wget -O- https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-switch/main/install-remote.sh | zsh -s -- --unattended
+wget -O- https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-switch/main/src/install-remote.sh | zsh -s -- --unattended
 ```
 
 ### Updating the Plugin
@@ -93,10 +93,10 @@ Alternatively, you can manually update using one of the installation methods:
 # If you used Git
 cd ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch
 git pull
-./install.sh
+./src/install.sh
 
 # Or use the remote installer again
-curl -fsSL https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-switch/main/install-remote.sh | zsh
+curl -fsSL https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-switch/main/src/install-remote.sh | zsh
 ```
 
 During an update, you'll be asked if you want to reconfigure your settings or keep your existing configuration.
@@ -119,22 +119,24 @@ This command will:
 
 ### Manual installation
 
-1. Copy `zsh-nvm-pnpm-auto-switch.plugin.zsh` to your ZSH plugins directory:
+1. Copy the plugin files to your ZSH plugins directory:
    ```bash
-   cp zsh-nvm-pnpm-auto-switch.plugin.zsh ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch/
+   # Create the plugin directory if it doesn't exist
+   mkdir -p ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch
+   
+   # Copy the main plugin file
+   cp src/zsh-nvm-pnpm-auto-switch.plugin.zsh ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch/
+   
+   # Copy the workspace configuration file
+   cp src/workspace-config.zsh ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch/
    ```
 
-2. Copy `workspace-config.zsh` to your ZSH plugins directory:
-   ```bash
-   cp workspace-config.zsh ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch/
-   ```
-
-3. Add the plugin to your `.zshrc`:
+2. Add the plugin to your `.zshrc`:
    ```bash
    plugins=(... zsh-nvm-pnpm-auto-switch)
    ```
 
-4. Add the required environment variables to your `.zshenv`:
+3. Add the required environment variables to your `.zshenv`:
    ```bash
    # Workspace directory for zsh-nvm-pnpm-auto-switch plugin
    export NVM_PNPM_AUTO_SWITCH_WORKSPACE="$HOME/workspace"
@@ -146,7 +148,7 @@ This command will:
    export NVM_PNPM_AUTO_SWITCH_DEBUG=0
    ```
 
-5. Restart your shell or run:
+4. Restart your shell or run:
    ```bash
    source ~/.zshrc
    ```
@@ -245,8 +247,6 @@ nvm_pnpm_auto_switch_uninstall
 
 If you no longer want to use the plugin, this command will completely remove it and clean up all related files and settings. It will ask for confirmation before proceeding.
 
-
-
 ## Environment Variables
 
 The plugin uses the following environment variables to control its behavior:
@@ -293,4 +293,4 @@ MIT
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request to the [GitHub repository](https://github.com/spencerbeggs/zsh-nvm-pnpm-auto-switch).
+Contributions are welcome! Please see our [CONTRIBUTING.md](CONTRIBUTING.md) file for details on how to contribute to this project. For security-related issues, please review our [SECURITY.md](SECURITY.md) file.
