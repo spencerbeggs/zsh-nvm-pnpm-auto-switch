@@ -1,0 +1,41 @@
+{
+	"name": "zsh-nvm-pnpm-auto-switch",
+	"version": "0.0.0",
+	"private": true,
+	"description": "A zsh plugin that automatically switches Node.js versions using nvm and manages pnpm package manager versions using Corepack when changing directories",
+	"author": {
+		"name": "C. Spencer Beggs",
+		"email": "spencer@savvy.nyc"
+	},
+	"type": "module",
+	"scripts": {
+		"lint": "eslint .",
+		"lint:fix": "eslint --fix .",
+		"lint:inspect": "pnpm dlx @eslint/config-inspector",
+		"prepare": "husky"
+	},
+	"devDependencies": {
+		"@commitlint/cli": "^19.8.0",
+		"@commitlint/config-conventional": "^19.8.0",
+		"@eslint/config-inspector": "^1.0.2",
+		"@eslint/js": "^9.25.1",
+		"@types/node": "^22.14.1",
+		"@typescript-eslint/utils": "^8.31.0",
+		"comment-json": "^4.2.5",
+		"cz-conventional-changelog": "^3.3.0",
+		"eslint": "^9.25.1",
+		"eslint-config-prettier": "^10.1.2",
+		"eslint-import-resolver-typescript": "^4.3.4",
+		"eslint-plugin-import-x": "^4.10.6",
+		"eslint-plugin-package-json": "^0.29.1",
+		"eslint-plugin-prettier": "^5.2.6",
+		"globals": "^16.0.0",
+		"husky": "^9.1.7",
+		"jiti": "^2.4.2",
+		"prettier": "^3.5.3",
+		"prettier-plugin-packagejson": "^2.5.10",
+		"typescript": "^5.8.3",
+		"typescript-eslint": "^8.31.0"
+	},
+	"packageManager": "pnpm@10.9.0"
+}

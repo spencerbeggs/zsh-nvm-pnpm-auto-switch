@@ -1,5 +1,5 @@
 paths:
-  - ".github/workflows"
+    - ".github/workflows"
 paths-ignore:
-  - "**/*.zsh"
-  - "**/*.sh"
+    - "**/*.zsh"
+    - "**/*.sh"
