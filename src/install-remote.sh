@@ -37,8 +37,8 @@ if [[ "$UNATTENDED" -eq 0 ]]; then
 fi
 
 # Download the plugin files
-curl -fsSL "$REPO_URL/raw/main/src/$PLUGIN_NAME.plugin.zsh" -o "$PLUGIN_DIR/$PLUGIN_NAME.plugin.zsh"
-curl -fsSL "$REPO_URL/raw/main/src/workspace-config.zsh" -o "$PLUGIN_DIR/workspace-config.zsh"
+curl -fsSL "$REPO_URL/blob/main/src/$PLUGIN_NAME.plugin.zsh?raw=true" -o "$PLUGIN_DIR/$PLUGIN_NAME.plugin.zsh"
+curl -fsSL "$REPO_URL/blob/main/src/workspace-config.zsh?raw=true" -o "$PLUGIN_DIR/workspace-config.zsh"
 
 # Make the plugin executable
 chmod +x "$PLUGIN_DIR/$PLUGIN_NAME.plugin.zsh"
@@ -88,7 +88,7 @@ if [[ "$UNATTENDED" -eq 0 ]]; then
   fi
 
   echo "🔧 zsh-nvm-pnpm-auto-switch - Interactive Setup"
-  echo "========================================"
+  echo "======================================"
   echo ""
   
   # Ask for workspace directory
