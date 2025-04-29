@@ -1,0 +1,49 @@
+{
+  "name": "zsh-nvm-pnpm-auto-switch",
+  "version": "1.0.0",
+  "description": "ZSH plugin for automatic NVM and PNPM version switching",
+  "author": "Spencer Beggs",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "private": true,
+  "keywords": [
+    "zsh",
+    "plugin",
+    "nvm",
+    "pnpm",
+    "node",
+    "version",
+    "switching"
+  ],
+  "scripts": {
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "shellcheck": "shellcheck -x src/*.sh"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^18.4.3",
+    "@commitlint/config-conventional": "^18.4.3",
+    "@typescript-eslint/eslint-plugin": "^6.14.0",
+    "@typescript-eslint/parser": "^6.14.0",
+    "eslint": "^8.55.0",
+    "husky": "^8.0.3",
+    "prettier": "^3.1.1",
+    "typescript": "^5.3.3"
+  },
+  "release": {
+    "branches": [
+      "main"
+    ],
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/changelog",
+      "@semantic-release/git",
+      "@semantic-release/github"
+    ]
+  }
+}
