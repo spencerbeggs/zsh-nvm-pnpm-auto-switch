@@ -1,0 +1,2 @@
+[ -n "$GITHUB_ACTIONS" ] && exit 0
+pnpm commitlint --edit $1
