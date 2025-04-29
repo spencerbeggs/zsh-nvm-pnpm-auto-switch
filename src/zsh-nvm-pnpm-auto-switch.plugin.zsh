@@ -39,14 +39,14 @@ nvm_pnpm_auto_switch() {
     local desired_node_version=""
     local packageManager=""
     
-    # Check for .npmrc file with Node.js version
-    if [[ -f ".npmrc" ]]; then
-      _nvm_pnpm_auto_switch_debug ".npmrc file found"
-      desired_node_version=$(grep "node-version" .npmrc | cut -d'=' -f2 | tr -d '[:space:]')
+    # Check for .nvmrc file with Node.js version
+    if [[ -f ".nvmrc" ]]; then
+      _nvm_pnpm_auto_switch_debug ".nvmrc file found"
+      desired_node_version=$(cat .nvmrc | tr -d '[:space:]')
       
       # If we found a desired Node.js version
       if [[ -n "$desired_node_version" ]]; then
-        _nvm_pnpm_auto_switch_debug "Found node-version=$desired_node_version in .npmrc"
+        _nvm_pnpm_auto_switch_debug "Found Node.js version: $desired_node_version in .nvmrc"
         
         # Add 'v' prefix if it doesn't have one
         if [[ ! "$desired_node_version" =~ ^v ]]; then
@@ -69,10 +69,10 @@ nvm_pnpm_auto_switch() {
           _nvm_pnpm_auto_switch_debug "Already using correct Node.js version: $current_node_version"
         fi
       else
-        _nvm_pnpm_auto_switch_debug "No node-version found in .npmrc"
+        _nvm_pnpm_auto_switch_debug "No Node.js version found in .nvmrc"
       fi
     else
-      _nvm_pnpm_auto_switch_debug "No .npmrc file found"
+      _nvm_pnpm_auto_switch_debug "No .nvmrc file found"
     fi
     
     # Get the package manager from package.json
