@@ -171,11 +171,11 @@ nvm_pnpm_auto_switch_update() {
   local update_result=0
   if command -v curl &> /dev/null; then
     echo "📦 Using curl to download latest version..."
-    curl -fsSL "$REPO_URL/raw/main/install-remote.sh" | NVM_PNPM_AUTO_SWITCH_UPDATE_IN_PROGRESS=1 zsh
+    curl -fsSL "$REPO_URL/blob/main/src/install-remote.sh?raw=true" | NVM_PNPM_AUTO_SWITCH_UPDATE_IN_PROGRESS=1 zsh
     update_result=$?
   elif command -v wget &> /dev/null; then
     echo "📦 Using wget to download latest version..."
-    wget -O- "$REPO_URL/raw/main/install-remote.sh" | NVM_PNPM_AUTO_SWITCH_UPDATE_IN_PROGRESS=1 zsh
+    wget -O- "$REPO_URL/blob/main/src/install-remote.sh?raw=true" | NVM_PNPM_AUTO_SWITCH_UPDATE_IN_PROGRESS=1 zsh
     update_result=$?
   else
     echo "❌ Update failed: Neither git, curl, nor wget is available."
