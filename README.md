@@ -1,5 +1,8 @@
 # zsh-nvm-pnpm-auto-switch
 
+[![Release](https://github.com/spencerbeggs/zsh-nvm-pnpm-auto-switch/actions/workflows/release.yml/badge.svg)](https://github.com/spencerbeggs/zsh-nvm-pnpm-auto-switch/actions/workflows/release.yml)
+[![Semantic Release](https://img.shields.io/badge/semantic--release-conventional-e10079?logo=semantic-release)](https://github.com/semantic-release/semantic-release)
+
 A ZSH plugin that automatically switches Node.js versions (using `nvm`) and manages `pnpm` package manager versions (using `corepack`) when changing directories.
 
 ## Features
@@ -10,6 +13,11 @@ A ZSH plugin that automatically switches Node.js versions (using `nvm`) and mana
 - 🔧 Installs missing Node.js versions automatically when needed
 - 🏠 Special workspace directory integration with optional project listing
 - 😶 Silent operation by default - only shows messages when needed
+- ⚙️ Interactive configuration via command line
+- 🔁 Smart installation/update process that preserves existing settings
+- 📖 Built-in help system with detailed command documentation
+- 🔄 Self-update capability to keep the plugin current
+- 🗑️ Clean uninstallation option to remove all traces of the plugin
 
 ## Requirements
 
@@ -20,80 +28,127 @@ A ZSH plugin that automatically switches Node.js versions (using `nvm`) and mana
 
 ## Installation
 
-### From GitHub (recommended)
-
 You can install the plugin directly from GitHub using one of the following methods:
 
-#### Using Git
-
-```bash
-# Clone the repository into your oh-my-zsh custom plugins directory
-git clone https://github.com/spencerbeggs/zsh-nvm-pnpm-auto-switch.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch
-
-# Run the interactive installation script
-${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch/install.sh
-```
-
-#### Using curl
-
-```bash
-# Download and run the installer script
-curl -fsSL https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-switch/main/install-remote.sh | zsh
-```
-
-#### Using wget
-
-```bash
-# Download and run the installer script
-wget -O- https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-switch/main/install-remote.sh | zsh
-```
-
-### Unattended Installation
+### From GitHub (recommended)
 
 For automated/unattended installation (using default settings):
 
 ```bash
-# Git-based installation with default settings
-git clone https://github.com/spencerbeggs/zsh-nvm-pnpm-auto-switch.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch
-${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch/install.sh --unattended
-
-# Or with curl
-curl -fsSL https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-switch/main/install-remote.sh | zsh -s -- --unattended
-
-# Or with wget
-wget -O- https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-switch/main/install-remote.sh | zsh -s -- --unattended
+git clone https://github.com/spencerbeggs/zsh-nvm-pnpm-auto-switch.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch && ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch/src/install.sh --unattended
 ```
+
+Download and run the installer wizard:
+
+```bash
+git clone https://github.com/spencerbeggs/zsh-nvm-pnpm-auto-switch.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch && ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch/src/install.sh
+```
+
+### Using curl
+
+For automated/unattended installation (using default settings):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-switch/main/src/install-remote.sh | zsh -c "zsh /dev/stdin --unattended"
+```
+
+Download and run the installer wizard:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-switch/main/src/install-remote.sh -o /tmp/install-remote.sh && zsh /tmp/install-remote.sh
+```
+
+### Using wget
+
+For automated/unattended installation (using default settings):
+
+```bash
+wget -O- https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-switch/main/src/install-remote.sh | zsh -c "zsh /dev/stdin --unattended"
+```
+
+Download and run the installer wizard:
+
+```bash
+wget -O /tmp/install-remote.sh https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-switch/main/src/install-remote.sh && zsh /tmp/install-remote.sh
+```
+
+### Updating the Plugin
+
+To update the plugin to the latest version, you can use the built-in update command:
+
+```bash
+# Update the plugin to the latest version
+nvm_pnpm_auto_switch_update
+```
+
+This command will automatically detect the best method to update the plugin (Git, curl, or wget), and will handle the update process for you.
+
+Alternatively, you can manually update using one of the installation methods:
+
+```bash
+# If you used Git
+cd ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch
+git pull
+./src/install.sh
+
+# Or use the remote installer again
+curl -fsSL https://raw.githubusercontent.com/spencerbeggs/zsh-nvm-pnpm-auto-switch/main/src/install-remote.sh | zsh
+```
+
+Using the `nvm_pnpm_auto_switch_update` command will run the update in unattended mode, preserving your existing configuration. If you want to update and reconfigure your settings, you can use one of the manual update methods.
+
+### Uninstalling the Plugin
+
+To remove the plugin and all related files and settings, use the built-in uninstall command:
+
+```bash
+# Uninstall the plugin
+nvm_pnpm_auto_switch_uninstall
+```
+
+This command will:
+
+- Remove all environment variables from your `.zshenv` file
+- Remove the plugin from your `.zshrc` file
+- Delete the plugin directory
+- Unset all environment variables for the current session
+- Provide instructions for completing the uninstallation
 
 ### Manual installation
 
-1. Copy `zsh-nvm-pnpm-auto-switch.plugin.zsh` to your ZSH plugins directory:
+1. Copy the plugin files to your ZSH plugins directory:
+
    ```bash
-   cp zsh-nvm-pnpm-auto-switch.plugin.zsh ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch/
+   # Create the plugin directory if it doesn't exist
+   mkdir -p ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch
+
+   # Copy the main plugin file
+   cp src/zsh-nvm-pnpm-auto-switch.plugin.zsh ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch/
+
+   # Copy the workspace configuration file
+   cp src/workspace-config.zsh ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch/
    ```
 
-2. Copy `workspace-config.zsh` to your ZSH plugins directory:
-   ```bash
-   cp workspace-config.zsh ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-nvm-pnpm-auto-switch/
-   ```
+2. Add the plugin to your `.zshrc`:
 
-3. Add the plugin to your `.zshrc`:
    ```bash
    plugins=(... zsh-nvm-pnpm-auto-switch)
    ```
 
-4. Add the required environment variables to your `.zshenv`:
+3. Add the required environment variables to your `.zshenv`:
+
    ```bash
    # Workspace directory for zsh-nvm-pnpm-auto-switch plugin
-   export NODE_AUTO_SWITCH_WORKSPACE="$HOME/workspace"
+   export NVM_PNPM_AUTO_SWITCH_WORKSPACE="$HOME/workspace"
 
    # Enable project listing in workspace (0=off, 1=on)
-   export NODE_AUTO_SWITCH_LIST_PROJECTS=0
+   export NVM_PNPM_AUTO_SWITCH_LIST_PROJECTS=0
 
    # Enable debug mode for zsh-nvm-pnpm-auto-switch (0=off, 1=on)
-   export NODE_AUTO_SWITCH_DEBUG=0
+   export NVM_PNPM_AUTO_SWITCH_DEBUG=0
    ```
 
-5. Restart your shell or run:
+4. Restart your shell or run:
    ```bash
    source ~/.zshrc
    ```
@@ -108,53 +163,101 @@ Once installed, the plugin works automatically:
 
 The plugin only displays messages when it needs to switch Node.js versions or update package managers.
 
-### Configuring Workspace Directory
+## Available Commands
 
-By default, the plugin uses `~/workspace` as your main workspace directory. You can customize this by setting the `NODE_AUTO_SWITCH_WORKSPACE` environment variable:
+After installation, the following commands are available to help you manage the plugin:
+
+| Command                                 | Description                                                      |
+| --------------------------------------- | ---------------------------------------------------------------- |
+| `nvm_pnpm_auto_switch_help`             | Display detailed help information about all available commands   |
+| `nvm_pnpm_auto_switch_man`              | Alias for `nvm_pnpm_auto_switch_help`                            |
+| `nvm_pnpm_auto_switch_configure`        | Run the interactive configuration wizard                         |
+| `nvm_pnpm_auto_switch_workspace [path]` | View or change the workspace directory                           |
+| `nvm_pnpm_auto_switch_list_projects`    | Toggle automatic project listing on/off                          |
+| `nvm_pnpm_auto_switch_debug`            | Toggle debug mode on/off                                         |
+| `nvm_pnpm_auto_switch_update`           | Update the plugin to the latest version from GitHub              |
+| `nvm_pnpm_auto_switch_uninstall`        | Uninstall the plugin and clean up all related files and settings |
+
+### Help and Documentation
 
 ```bash
-# Set in your .zshrc or .zshenv
-export NODE_AUTO_SWITCH_WORKSPACE="$HOME/projects"
+# Display full help information
+nvm_pnpm_auto_switch_help
+
+# Alias for help (same as above)
+nvm_pnpm_auto_switch_man
 ```
 
-Alternatively, you can use the provided command:
+The help command provides detailed information about all available commands and environment variables. It's a great starting point if you're new to the plugin or need a refresher on what commands are available.
+
+### Interactive Configuration
 
 ```bash
-# Set the workspace directory for the current session
-node_auto_switch_workspace ~/dev
+# Run the interactive configuration wizard
+nvm_pnpm_auto_switch_configure
+```
 
+This command launches an interactive configuration wizard that helps you set up or change the plugin's settings. It shows current settings and allows you to update them with guided prompts. Changes are saved to your `.zshenv` file automatically.
+
+### Workspace Directory Management
+
+```bash
 # Check the current workspace directory
-node_auto_switch_workspace
+nvm_pnpm_auto_switch_workspace
+
+# Set a new workspace directory
+nvm_pnpm_auto_switch_workspace ~/dev
 ```
 
-### Configuring Project Listing
+The workspace directory is a special directory where you can enable additional features like project listing. By default, this is set to `~/workspace`, but you can change it to any directory you prefer.
 
-When entering your workspace directory, the plugin can automatically list available projects. This feature is disabled by default for a clean, silent experience. When disabled, no messages are shown at all when entering your workspace.
-
-To enable project listing:
-
-```bash
-# Set in your .zshrc or .zshenv (0 = off, 1 = on)
-export NODE_AUTO_SWITCH_LIST_PROJECTS=1
-```
-
-You can also toggle this feature using the provided command:
+### Project Listing Control
 
 ```bash
 # Toggle project listing on/off
-node_auto_switch_list_projects
+nvm_pnpm_auto_switch_list_projects
 ```
 
-### Debugging
+When project listing is enabled, the plugin will display a list of available projects when you enter your workspace directory. This is useful for quickly seeing what projects are available.
 
-The plugin includes a debug mode to help troubleshoot issues:
+### Debug Mode
 
 ```bash
 # Toggle debug mode on/off
-node_auto_switch_debug
+nvm_pnpm_auto_switch_debug
 ```
 
-When debug mode is enabled, the plugin will output detailed information about what it's doing when you change directories, including in the workspace directory even if project listing is disabled.
+Debug mode provides detailed information about what the plugin is doing, which can be helpful for troubleshooting. When enabled, you'll see messages about detected Node.js versions, package managers, and more.
+
+### Updating the Plugin
+
+```bash
+# Update the plugin to the latest version
+nvm_pnpm_auto_switch_update
+```
+
+This command will automatically update the plugin to the latest version from GitHub. It will try to use Git if you installed via git clone, or fall back to curl or wget if necessary.
+
+### Uninstalling the Plugin
+
+```bash
+# Remove the plugin and clean up all related files and settings
+nvm_pnpm_auto_switch_uninstall
+```
+
+If you no longer want to use the plugin, this command will completely remove it and clean up all related files and settings. It will ask for confirmation before proceeding.
+
+## Environment Variables
+
+The plugin uses the following environment variables to control its behavior:
+
+| Variable                             | Description                                       | Default           |
+| ------------------------------------ | ------------------------------------------------- | ----------------- |
+| `NVM_PNPM_AUTO_SWITCH_WORKSPACE`     | Path to your workspace directory                  | `$HOME/workspace` |
+| `NVM_PNPM_AUTO_SWITCH_LIST_PROJECTS` | Enable project listing in workspace (0=off, 1=on) | `0`               |
+| `NVM_PNPM_AUTO_SWITCH_DEBUG`         | Enable debug mode (0=off, 1=on)                   | `0`               |
+
+You can set these variables in your `.zshenv` file manually, or use the `nvm_pnpm_auto_switch_configure` command to set them interactively.
 
 ## Example Files
 
@@ -190,4 +293,4 @@ MIT
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request to the [GitHub repository](https://github.com/spencerbeggs/zsh-nvm-pnpm-auto-switch).
+Contributions are welcome! Please see our [CONTRIBUTING.md](CONTRIBUTING.md) file for details on how to contribute to this project. For security-related issues, please review our [SECURITY.md](SECURITY.md) file.
