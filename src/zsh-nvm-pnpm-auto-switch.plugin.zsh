@@ -67,6 +67,10 @@ nvm_pnpm_auto_switch() {
           nvm use "$desired_node_version" &>/dev/null
         else
           _nvm_pnpm_auto_switch_debug "Already using correct Node.js version: $current_node_version"
+          # Show message to user if not in debug mode
+          if [[ "$NVM_PNPM_AUTO_SWITCH_DEBUG" != "1" ]]; then
+            echo "👍 Using correct Node.js version: $current_node_version"
+          fi
         fi
       else
         _nvm_pnpm_auto_switch_debug "No Node.js version found in .nvmrc"
@@ -103,6 +107,10 @@ nvm_pnpm_auto_switch() {
           corepack prepare pnpm@$desired_pnpm_version --activate &>/dev/null
         else
           _nvm_pnpm_auto_switch_debug "Already using correct pnpm version: $current_pnpm_version"
+          # Show message to user if not in debug mode
+          if [[ "$NVM_PNPM_AUTO_SWITCH_DEBUG" != "1" ]]; then
+            echo "👍 Using correct pnpm version: $current_pnpm_version"
+          fi
         fi
       else
         _nvm_pnpm_auto_switch_debug "Package manager is not pnpm: $packageManager"
