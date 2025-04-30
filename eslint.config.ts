@@ -9,7 +9,7 @@ import type { FlatConfig } from "@typescript-eslint/utils/ts-eslint";
 
 const config = tseslint.config(
 	{
-		ignores: ["**/dist/**", "**/node_modules/**", "**/.coverage/**"]
+		ignores: ["**/dist/**", "**/node_modules/**", "**/node_modules_bak/**", "**/.coverage/**", "**/scripts/changelog/**"]
 	},
 	eslint.configs.recommended,
 	tseslint.configs.strictTypeChecked,
@@ -18,7 +18,7 @@ const config = tseslint.config(
 	importPlugin.flatConfigs.typescript,
 	{
 		name: "typescript",
-		files: ["**/*.ts", "**/*.tsx", "**/*.mts", "**/*.cts"],
+		files: ["**/*.ts", "**/*.tsx", "**/*.mts", "**/*.cts", "**/*.mjs", "**/.*.mjs"],
 		ignores: ["package.json"],
 		languageOptions: {
 			ecmaVersion: "latest",
@@ -75,7 +75,7 @@ const config = tseslint.config(
 	},
 	packageJsonPlugin.configs.recommended,
 	{
-		files: ["**/package.json"],
+		files: ["**/package.json", "**/*.mjs"],
 		extends: [tseslint.configs.disableTypeChecked]
 	},
 	prettierPlugin

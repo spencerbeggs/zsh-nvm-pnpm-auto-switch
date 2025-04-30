@@ -1,0 +1,11 @@
+# Skip pre-commit hook in CI environment
+[ -n "$GITHUB_ACTIONS" ] && exit 0
+
+# Run ESLint to fix issues
+pnpm lint:fix
+
+# Stage any files fixed by ESLint
+git add -u
+
+# Run validate (tests, etc.)
+pnpm validate

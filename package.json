@@ -1,6 +1,6 @@
 {
 	"name": "zsh-nvm-pnpm-auto-switch",
-	"version": "0.0.0",
+	"version": "4.0.0",
 	"private": true,
 	"description": "A zsh plugin that automatically switches Node.js versions using nvm and manages pnpm package manager versions using Corepack when changing directories",
 	"repository": {
@@ -17,101 +17,42 @@
 		"lint:fix": "eslint --fix .",
 		"lint:inspect": "pnpm dlx @eslint/config-inspector",
 		"prepare": "husky",
-		"release": "pnpm semantic-release",
+		"prepare-commit": "pnpm lint:fix && pnpm test",
+		"preview:changelog": "semantic-release --dryRun --debug --ci",
 		"test": "vitest run",
-		"test:watch": "vitest"
-	},
-	"release": {
-		"branches": [
-			"main"
-		],
-		"plugins": [
-			[
-				"@semantic-release/commit-analyzer",
-				{
-					"releaseRules": [
-						{
-							"type": "feat",
-							"release": "minor"
-						},
-						{
-							"type": "fix",
-							"release": "patch"
-						},
-						{
-							"type": "ci",
-							"release": "patch"
-						},
-						{
-							"type": "chore",
-							"release": "patch"
-						}
-					]
-				}
-			],
-			"@semantic-release/release-notes-generator",
-			[
-				"@semantic-release/npm",
-				{
-					"npmPublish": false
-				}
-			],
-			[
-				"@semantic-release/changelog",
-				{
-					"changelogFile": "CHANGELOG.md"
-				}
-			],
-			[
-				"@semantic-release/github",
-				{
-					"assets": [
-						"CHANGELOG.md"
-					]
-				}
-			],
-			[
-				"@semantic-release/git",
-				{
-					"assets": [
-						"CHANGELOG.md",
-						"package.json",
-						"pnpm-lock.yaml"
-					],
-					"message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
-				}
-			]
-		]
+		"test:watch": "vitest",
+		"validate": "pnpm lint:fix && pnpm test"
 	},
 	"devDependencies": {
+		"@browsermcp/mcp": "^0.1.3",
 		"@commitlint/cli": "^19.8.0",
 		"@commitlint/config-conventional": "^19.8.0",
 		"@eslint/config-inspector": "^1.0.2",
-		"@eslint/js": "^9.25.1",
+		"@eslint/js": "^9.26.0",
 		"@semantic-release/changelog": "^6.0.3",
 		"@semantic-release/git": "^10.0.1",
 		"@semantic-release/github": "^11.0.2",
-		"@types/node": "^22.14.1",
-		"@typescript-eslint/utils": "^8.31.0",
+		"@types/node": "^22.15.9",
+		"@typescript-eslint/utils": "^8.32.0",
 		"comment-json": "^4.2.5",
-		"cz-conventional-changelog": "^3.3.0",
-		"eslint": "^9.25.1",
+		"eslint": "^9.26.0",
 		"eslint-config-prettier": "^10.1.2",
 		"eslint-import-resolver-typescript": "^4.3.4",
 		"eslint-plugin-import-x": "^4.10.6",
 		"eslint-plugin-package-json": "^0.31.0",
-		"eslint-plugin-prettier": "^5.2.6",
+		"eslint-plugin-prettier": "^5.4.0",
 		"glob": "^11.0.2",
 		"globals": "^16.0.0",
 		"husky": "^9.1.7",
 		"jiti": "^2.4.2",
 		"prettier": "^3.5.3",
-		"prettier-plugin-packagejson": "^2.5.10",
+		"prettier-plugin-packagejson": "^2.5.11",
 		"semantic-release": "^24.2.3",
 		"shellcheck": "^3.1.0",
+		"tsx": "^4.19.4",
 		"typescript": "^5.8.3",
-		"typescript-eslint": "^8.31.0",
-		"vitest": "^3.1.2"
+		"typescript-eslint": "^8.32.0",
+		"vitest": "^3.1.3"
 	},
 	"packageManager": "pnpm@10.10.0"
 }

@@ -1,0 +1,51 @@
+name: Update Latest Tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_tag:
+        description: 'Version tag to point "latest" to (e.g., v1.0.0)'
+        required: true
+        type: string
+
+# Add permissions for releases
+permissions:
+  contents: write
+
+jobs:
+  update-tag:
+    name: Update Latest Tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Set up GPG for commit signing
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
+          git_tag_gpgsign: true
+          git_push_gpgsign: false
+
+      - name: Update Latest Tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          VERSION_TAG: ${{ inputs.version_tag }}
+        run: |
+          echo "Pointing 'latest' tag to: $VERSION_TAG"
+          
+          # Delete the 'latest' tag if it exists
+          git tag -d latest || true
+          git push --delete origin latest || true
+          
+          # Create and push the 'latest' tag (signed)
+          git tag -s latest -m "Latest stable version: ${VERSION_TAG}"
+          git push origin latest
+          
+          echo "✅ Successfully updated 'latest' tag to point to ${VERSION_TAG}"

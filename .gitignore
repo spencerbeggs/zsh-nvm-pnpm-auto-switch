@@ -28,3 +28,12 @@ Thumbs.db
 
 # Build output
 dist/
+
+**/.claude/settings.local.json
+
+# Preview files
+CHANGELOG-PREVIEW.md
+CHANGELOG-EXAMPLE.md
+CHANGELOG-MODIFIED.md
+.temp-releaserc.json
+.temp-conventional-config.json

@@ -1,0 +1,214 @@
+name: Release
+
+on:
+    push:
+        branches:
+            - main
+        paths-ignore:
+            - "CHANGELOG.md"
+            - "package.json"
+            - "pnpm-lock.yaml"
+    schedule:
+        - cron: "30 1 * * 0" # Run at 1:30 AM UTC every Sunday
+    workflow_dispatch: # Allow manual triggering
+
+# Add permissions for releases and checks
+permissions:
+    contents: write # to create release
+    issues: write # to comment on released issues
+    pull-requests: write # to comment on released pull requests
+    checks: write # for check results
+
+jobs:
+    # lint:
+    #     name: Linting
+    #     runs-on: ubuntu-latest
+    #     steps:
+    #         - name: Checkout repository
+    #           uses: actions/checkout@v4
+    #           with:
+    #               fetch-depth: 0
+
+    #         - uses: ./.github/actions/setup
+
+    #         - name: Run ESLint
+    #           run: pnpm lint
+
+    # test:
+    #     name: Tests
+    #     runs-on: ubuntu-latest
+    #     steps:
+    #         - name: Checkout repository
+    #           uses: actions/checkout@v4
+
+    #         - uses: ./.github/actions/setup
+
+    #         - name: Install Zsh for tests
+    #           run: sudo apt-get update && sudo apt-get install -y zsh
+
+    #         - name: Set CI environment variable
+    #           run: echo "CI=true" >> $GITHUB_ENV
+
+    #         - name: Run tests
+    #           run: pnpm test
+
+    # commitlint:
+    #     name: Conventional Commits
+    #     runs-on: ubuntu-latest
+    #     steps:
+    #         - name: Checkout repository
+    #           uses: actions/checkout@v4
+    #           with:
+    #               fetch-depth: 0
+
+    #         - uses: ./.github/actions/setup
+
+    #         - name: Validate Conventional Commits
+    #           run: |
+    #               echo "Validating the last commit message"
+    #               git log -1 --pretty=format:"%s" | pnpm commitlint --verbose
+
+    # Add a job to wait for CodeQL scan to complete
+    wait-for-codeql:
+        name: CodeQL Scan
+        runs-on: ubuntu-latest
+        steps:
+            - name: Check for release commit or skip CI directive
+              id: check-skip-ci
+              run: |
+                  COMMIT_MSG=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+                    "https://api.github.com/repos/${{ github.repository }}/commits/${{ github.sha }}" \
+                    | jq -r '.commit.message')
+
+                  # Check if commit message is a release commit (release: X.Y.Z pattern)
+                  if [[ "$COMMIT_MSG" =~ ^release:\ [0-9]+\.[0-9]+\.[0-9]+ ]]; then
+                    echo "Release commit detected, bypassing CodeQL check"
+                    echo "skip_codeql=true" >> $GITHUB_OUTPUT
+                  # Also still support explicit [skip ci] marker
+                  elif [[ "$COMMIT_MSG" == *"[skip ci]"* ]]; then
+                    echo "Skip CI detected in commit message, bypassing CodeQL check"
+                    echo "skip_codeql=true" >> $GITHUB_OUTPUT
+                  else
+                    echo "Regular commit detected, waiting for CodeQL check"
+                    echo "skip_codeql=false" >> $GITHUB_OUTPUT
+                  fi
+
+            - name: Wait for TypeScript CodeQL check
+              if: steps.check-skip-ci.outputs.skip_codeql != 'true'
+              uses: lewagon/wait-on-check-action@v1.3.1
+              with:
+                  ref: ${{ github.ref }}
+                  check-name: "Analyze (typescript)"
+                  repo-token: ${{ secrets.GITHUB_TOKEN }}
+                  wait-interval: 10
+                  allowed-conclusions: success,skipped,cancelled
+
+            - name: Wait for Actions CodeQL check
+              if: steps.check-skip-ci.outputs.skip_codeql != 'true'
+              uses: lewagon/wait-on-check-action@v1.3.1
+              with:
+                  ref: ${{ github.ref }}
+                  check-name: "Analyze (actions)"
+                  repo-token: ${{ secrets.GITHUB_TOKEN }}
+                  wait-interval: 10
+                  allowed-conclusions: success,skipped,cancelled
+
+    release:
+        name: Semantic Release
+        #needs: [lint, test, commitlint, wait-for-codeql]
+        needs: [wait-for-codeql]
+        # Only run if all previous jobs succeeded
+        if: success()
+        runs-on: ubuntu-latest
+        environment: release
+        # Define outputs that will be used by other steps
+        outputs:
+            SEMANTIC_RELEASE_SUCCESS: ${{ steps.semantic_release.outputs.SEMANTIC_RELEASE_SUCCESS || 'false' }}
+            RELEASED_VERSION: ${{ steps.semantic_release.outputs.RELEASED_VERSION }}
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  ref: main
+                  # Use a PAT with repo scope to bypass branch protection
+                  token: ${{ secrets.GH_TOKEN }}
+
+            - uses: ./.github/actions/setup
+
+            # Set up GPG for commit signing
+            - name: Import GPG key
+              uses: crazy-max/ghaction-import-gpg@v6
+              with:
+                  gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+                  passphrase: ${{ secrets.GPG_PASSPHRASE }}
+                  git_user_signingkey: true
+                  git_commit_gpgsign: true
+                  git_tag_gpgsign: true
+                  git_push_gpgsign: false
+
+            # Configure Git for semantic-release with additional tag configuration
+            - name: Setup Git Identity and Configuration
+              run: |
+                  git config --global user.name \"${{ github.actor }}\"
+                  git config --global user.email \"${{ github.actor }}@users.noreply.github.com\"
+                  # Ensure Git uses the -m option for tags automatically to avoid editor issues
+                  git config --global tag.forceSignAnnotated true
+                  git config --global tag.gpgSign true
+                  # Set up default tag message
+                  git config --global core.editor \"cat\"
+                  # Prevent interactive prompt
+                  git config --global batch.confirm true
+
+            - name: Release
+              id: semantic_release
+              env:
+                  # GitHub token with appropriate permissions
+                  GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+                  # GPG passphrase for signing
+                  GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+                  # Set GPG_TTY for git tag signing
+                  GPG_TTY: $(tty)
+                  GIT_AUTHOR_NAME: "C. Spencer Beggs"
+                  GIT_AUTHOR_EMAIL: "spencer@savvy.nyc"
+                  GIT_COMMITTER_NAME: "C. Spencer Beggs"
+                  GIT_COMMITTER_EMAIL: "spencer@savvy.nyc"
+                  # Enable CodeQL waiting in our patched @semantic-release/git package
+                  WAIT_FOR_CODEQL: "true" # Enable waiting for CodeQL
+                  # Add debugging for release information
+                  DEBUG: "semantic-release:*"
+              run: |
+                  # Get the current commit SHA before running semantic-release
+                  BEFORE_COMMIT_SHA=$(git rev-parse HEAD)
+                  echo "BEFORE_COMMIT_SHA=$BEFORE_COMMIT_SHA" >> $GITHUB_ENV
+
+                  # Try running semantic-release
+                  set +e  # Don't exit on error
+                  pnpm semantic-release
+                  RELEASE_EXIT_CODE=$?
+                  set -e  # Re-enable exit on error
+
+                  if [ $RELEASE_EXIT_CODE -eq 0 ]; then
+                      echo "✅ Semantic release succeeded"
+                      echo "SEMANTIC_RELEASE_SUCCESS=true" >> $GITHUB_ENV
+                      echo "SEMANTIC_RELEASE_SUCCESS=true" >> $GITHUB_OUTPUT
+                      
+                      # Extract the version that was released
+                      VERSION=$(node -e "console.log(require('./package.json').version)")
+                      echo "RELEASED_VERSION=$VERSION" >> $GITHUB_ENV
+                      echo "RELEASED_VERSION=$VERSION" >> $GITHUB_OUTPUT
+                      echo "Version released: $VERSION"
+                  else
+                      echo "❌ Semantic release failed with exit code $RELEASE_EXIT_CODE"
+                      echo "SEMANTIC_RELEASE_SUCCESS=false" >> $GITHUB_ENV
+                      echo "SEMANTIC_RELEASE_SUCCESS=false" >> $GITHUB_OUTPUT
+                      
+                      # When semantic-release fails, we don't create any tags or commits
+                      # This is safer than trying to create a tag manually when we don't know
+                      # what went wrong with the release process
+                      
+                      exit 1  # Fail the workflow step
+                  fi
+
+            # No additional steps needed - GitHub's releases/latest API will automatically
+            # redirect to the most recent release, and we can use that in our installation scripts

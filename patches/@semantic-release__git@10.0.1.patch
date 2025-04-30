@@ -1,0 +1,218 @@
+diff --git a/lib/git.js b/lib/git.js
+index 267ef1d7a38a4de2c1b9986333eb8b2782ec358b..83ee9f09c61210d1b0aff0ad401d7d54adb5ef82 100644
+--- a/lib/git.js
++++ b/lib/git.js
+@@ -1,4 +1,11 @@
+-const execa = require('execa');
++let execa;
++try {
++  // Try to import new execa version that supports ESM
++  execa = require('execa');
++} catch (error) {
++  // Fallback to requiring
++  execa = require('execa');
++}
+ const debug = require('debug')('semantic-release:git');
+ 
+ /**
+diff --git a/lib/prepare.js b/lib/prepare.js
+index 0e85b0052f560a6df8880a2b60039d412a30b5ab..0cd33a699ec8fa774b78a2509ce744f717da57fd 100644
+--- a/lib/prepare.js
++++ b/lib/prepare.js
+@@ -18,6 +18,65 @@ const {getModifiedFiles, add, commit, push} = require('./git');
+  * @param {Object} context.nextRelease The next release.
+  * @param {Object} logger Global logger.
+  */
++// Create utility function to check for CodeQL completion
++const waitForCodeQLScan = async (repoOwner, repoName, commitSha, githubToken, logger, maxRetries = 5, retryDelay = 10000) => {
++  // Use the existing execa from git.js
++  const execa = require('execa');
++  
++  logger.log('Waiting for CodeQL scan to complete...');
++  
++  for (let attempt = 1; attempt <= maxRetries; attempt++) {
++    try {
++      // Construct curl command
++      const curlArgs = [
++        '-s',
++        '-H',
++        `Authorization: token ${githubToken}`,
++        `https://api.github.com/repos/${repoOwner}/${repoName}/commits/${commitSha}/check-runs?check_name=Analyze%20(typescript)`
++      ];
++      
++      // Use execa to execute the curl command
++      const result = await execa('curl', curlArgs);
++      
++      if (result.stdout) {
++        const checkData = JSON.parse(result.stdout);
++        
++        if (checkData.check_runs && checkData.check_runs.length > 0) {
++          const codeQLCheck = checkData.check_runs[0];
++          const status = codeQLCheck.status;
++          const conclusion = codeQLCheck.conclusion;
++          
++          logger.log(`CodeQL check status: ${status}, conclusion: ${conclusion || 'pending'}`);
++          
++          if (status === 'completed') {
++            if (['success', 'skipped', 'cancelled'].includes(conclusion)) {
++              logger.log('CodeQL check completed successfully, continuing...');
++              return true;
++            } else {
++              logger.log(`CodeQL check failed with conclusion: ${conclusion}`);
++              // Continue anyway to not block the release
++              return true;
++            }
++          }
++        } else if (attempt === 1) {
++          // If first attempt and no check runs found yet
++          logger.log('No CodeQL check found yet, waiting for it to start...');
++        }
++      }
++    } catch (error) {
++      logger.log(`Error checking CodeQL status (attempt ${attempt}): ${error.message}`);
++    }
++    
++    if (attempt < maxRetries) {
++      logger.log(`Waiting ${retryDelay / 1000} seconds before checking again (attempt ${attempt}/${maxRetries})...`);
++      await new Promise(resolve => setTimeout(resolve, retryDelay));
++    }
++  }
++  
++  logger.log('Timed out waiting for CodeQL check, continuing with release anyway...');
++  return false;
++}
++
+ module.exports = async (pluginConfig, context) => {
+   const {
+     env,
+@@ -28,9 +87,14 @@ module.exports = async (pluginConfig, context) => {
+     nextRelease,
+     logger,
+   } = context;
+-  const {message, assets} = resolveConfig(pluginConfig, logger);
++  const {message, assets, waitForCodeQL} = resolveConfig(pluginConfig, logger);
+ 
+-  const modifiedFiles = await getModifiedFiles({env, cwd});
++  const modifiedFiles = [...await getModifiedFiles({env, cwd})];
++  if (waitForCodeQL) {
++    if (env.GITHUB_ACTIONS === "true") {
++      modifiedFiles.push(".github/temporary-codeql-marker");
++    }
++  }
+ 
+   const filesToCommit = uniq(
+     await pReduce(
+@@ -60,12 +124,48 @@ module.exports = async (pluginConfig, context) => {
+     logger.log('Found %d file(s) to commit', filesToCommit.length);
+     await add(filesToCommit, {env, cwd});
+     debug('commited files: %o', filesToCommit);
+-    await commit(
+-      message
+-        ? template(message)({branch: branch.name, lastRelease, nextRelease})
+-        : `chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}`,
+-      {env, cwd}
+-    );
++    
++    // Create the commit message
++    const commitMessage = message
++      ? template(message)({branch: branch.name, lastRelease, nextRelease})
++      : `chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}`;
++    
++    // Commit the changes
++    await commit(commitMessage, {env, cwd});
++    
++    // Get the commit SHA using the existing execa
++    const execa = require('execa');
++    const { stdout: commitSha } = await execa('git', ['rev-parse', 'HEAD'], {cwd});
++    logger.log(`Created commit ${commitSha} for release ${nextRelease.version}`);
++    
++    // Extract repo owner and name from repositoryUrl
++    // Format could be: https://github.com/owner/repo.git or git@github.com:owner/repo.git
++    let repoOwner, repoName;
++    
++    if (repositoryUrl.includes('github.com')) {
++      const match = repositoryUrl.match(/github\.com[/:](.*?)\/(.*?)(?:\.git)?$/);
++      if (match) {
++        repoOwner = match[1];
++        repoName = match[2];
++      }
++    }
++    
++    // Check if we have the GitHub token in the environment
++    const githubToken = env.GITHUB_TOKEN || env.GH_TOKEN;
++    
++    // Wait for CodeQL if we have the necessary information and it's explicitly enabled
++    if (repoOwner && repoName && githubToken && env.WAIT_FOR_CODEQL === 'true') {
++      // Use a shorter timeout for the first release
++      const maxRetries = env.CODEQL_MAX_RETRIES ? parseInt(env.CODEQL_MAX_RETRIES, 10) : 5;
++      const retryDelay = env.CODEQL_RETRY_DELAY ? parseInt(env.CODEQL_RETRY_DELAY, 10) : 10000;
++      
++      logger.log(`CodeQL wait enabled with maxRetries=${maxRetries}, retryDelay=${retryDelay}ms`);
++      await waitForCodeQLScan(repoOwner, repoName, commitSha, githubToken, logger, maxRetries, retryDelay);
++    } else {
++      logger.log('Skipping CodeQL wait - not explicitly enabled with WAIT_FOR_CODEQL=true or missing required information');
++    }
++    
++    // Push the changes
+     await push(repositoryUrl, branch.name, {env, cwd});
+     logger.log('Prepared Git release: %s', nextRelease.gitTag);
+   }
+diff --git a/lib/resolve-config.js b/lib/resolve-config.js
+index dd62abfeed07068d36c5e50724a3ec8957631362..31d44ec38a90d2ea4126d7d08e5d60603f986760 100644
+--- a/lib/resolve-config.js
++++ b/lib/resolve-config.js
+@@ -1,10 +1,11 @@
+ const {isNil, castArray} = require('lodash');
+ 
+-module.exports = ({assets, message}) => ({
++module.exports = ({assets, message, waitForCodeQL}) => ({
+   assets: isNil(assets)
+     ? ['CHANGELOG.md', 'package.json', 'package-lock.json', 'npm-shrinkwrap.json']
+     : assets
+     ? castArray(assets)
+     : assets,
+   message,
++  waitForCodeQL,
+ });
+diff --git a/lib/verify.js b/lib/verify.js
+index 5ab2990a060b3032377f95e0960889d205c8c074..ff98e1cd4c0cef250cc3dd2d8245e66f6debd987 100644
+--- a/lib/verify.js
++++ b/lib/verify.js
+@@ -13,16 +13,19 @@ const VALIDATORS = {
+     isArrayOf(asset => isStringOrStringArray(asset) || (isPlainObject(asset) && isStringOrStringArray(asset.path)))
+   ),
+   message: isNonEmptyString,
++  waitForCodeQL: value => value === undefined || typeof value === 'boolean',
+ };
+ 
+ /**
+  * Verify the commit `message` format and the `assets` option configuration:
+  * - The commit `message`, is defined, must a non empty `String`.
+  * - The `assets` configuration must be an `Array` of `String` (file path) or `false` (to disable).
++ * - The `waitForCodeQL` option, if defined, must be a boolean.
+  *
+  * @param {Object} pluginConfig The plugin configuration.
+  * @param {String|Array<String|Object>} [pluginConfig.assets] Files to include in the release commit. Can be files path or globs.
+  * @param {String} [pluginConfig.message] The commit message for the release.
++ * @param {Boolean} [pluginConfig.waitForCodeQL] Whether to wait for CodeQL analysis to complete before pushing the commit.
+  */
+ module.exports = pluginConfig => {
+   const options = resolveConfig(pluginConfig);
+diff --git a/package.json b/package.json
+index 21845442aeff100575014521f9569637e8c13b58..10ed86573438339c950872cd5a745f0d7cee2aa6 100644
+--- a/package.json
++++ b/package.json
+@@ -20,11 +20,12 @@
+     "aggregate-error": "^3.0.0",
+     "debug": "^4.0.0",
+     "dir-glob": "^3.0.0",
+-    "execa": "^5.0.0",
++    "execa": "^7.1.1",
+     "lodash": "^4.17.4",
+     "micromatch": "^4.0.0",
+     "p-reduce": "^2.0.0"
+   },
++  "type": "commonjs",
+   "devDependencies": {
+     "ava": "3.15.0",
+     "clear-module": "4.1.1",

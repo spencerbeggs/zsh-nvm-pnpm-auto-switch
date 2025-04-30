@@ -7,8 +7,9 @@
 		"esModuleInterop": true,
 		"skipLibCheck": true,
 		"forceConsistentCasingInFileNames": true,
-		"strict": true
+		"strict": true,
+		"allowJs": true
 	},
-	"include": ["*.ts", "__test__/**/*.ts"],
+	"include": ["*.ts", "*.mjs", "__test__/**/*.ts", "scripts/**/*.mjs", "scripts/**/*.mts"],
 	"exclude": ["node_modules"]
 }

@@ -1,3 +1,4 @@
 {
-  "extends": ["@commitlint/config-conventional"]
+	"$schema": "https://json.schemastore.org/commitlintrc",
+	"extends": ["@commitlint/config-conventional"]
 }

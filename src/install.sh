@@ -13,14 +13,14 @@ setup_shell_integration() {
   if [ -f "$zshrc" ]; then
     # Check if plugin is already sourced in zshrc
     if ! grep -q "${plugin_source_line}" "$zshrc"; then
-      echo "\nAdding plugin to $zshrc"
+      printf "\nAdding plugin to %s\n" "$zshrc"
       echo "$plugin_source_line" >> "$zshrc"
       echo "✅ Installation complete! Please restart your terminal or run 'source $zshrc'."
     else
       echo "✅ Plugin is already installed in $zshrc"
     fi
   else
-    echo "\n⚠️  Could not find $zshrc"
+    printf "\n⚠️  Could not find %s\n" "$zshrc"
     echo "Please add the following line to your shell configuration file:"
     echo "$plugin_source_line"
   fi
@@ -31,5 +31,5 @@ chmod +x "${PLUGIN_DIR}/src/zsh-nvm-pnpm-auto-switch.plugin.zsh"
 chmod +x "${PLUGIN_DIR}/src/workspace-config.zsh"
 
 # Main installation
-echo "\n🔧 Installing zsh-nvm-pnpm-auto-switch plugin..."
+printf "\n🔧 Installing zsh-nvm-pnpm-auto-switch plugin...\n"
 setup_shell_integration

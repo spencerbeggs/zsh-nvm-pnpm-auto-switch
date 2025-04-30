@@ -4,7 +4,7 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PLUGIN_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
-echo "\n🔍 ZSH NVM PNPM Auto Switch - Debug Info\n"
+printf "\n🔍 ZSH NVM PNPM Auto Switch - Debug Info\n\n"
 
 # Check ZSH availability
 echo "1. ZSH Check:"
@@ -15,7 +15,7 @@ else
 fi
 
 # Check NVM availability
-echo "\n2. NVM Check:"
+printf "\n2. NVM Check:\n"
 if [ -d "${HOME}/.nvm" ] || [ -d "${NVM_DIR}" ]; then
   echo "   ✅ NVM installation detected"
   if command -v nvm &> /dev/null; then
@@ -28,7 +28,7 @@ else
 fi
 
 # Check plugin installation
-echo "\n3. Plugin Installation Check:"
+printf "\n3. Plugin Installation Check:\n"
 ZSHRC="${HOME}/.zshrc"
 PLUGIN_SOURCE_LINE="source ${PLUGIN_DIR}/src/zsh-nvm-pnpm-auto-switch.plugin.zsh"
 
@@ -43,7 +43,7 @@ else
 fi
 
 # Check plugin files
-echo "\n4. Plugin Files Check:"
+printf "\n4. Plugin Files Check:\n"
 if [ -f "${PLUGIN_DIR}/src/zsh-nvm-pnpm-auto-switch.plugin.zsh" ]; then
   echo "   ✅ Main plugin file exists"
 else
@@ -56,12 +56,12 @@ else
   echo "   ❌ Config file missing"
 fi
 
-echo "\n5. PNPM Check:"
+printf "\n5. PNPM Check:\n"
 if command -v pnpm &> /dev/null; then
   echo "   ✅ PNPM is installed: $(pnpm --version)"
 else
   echo "   ℹ️  PNPM is not installed (will be installed automatically when needed)"
 fi
 
-echo "\n🔧 If you're having issues, try running:\n"
-echo "source ${PLUGIN_DIR}/src/zsh-nvm-pnpm-auto-switch.plugin.zsh\n"
+printf "\n🔧 If you're having issues, try running:\n\n"
+printf "source %s/src/zsh-nvm-pnpm-auto-switch.plugin.zsh\n\n" "${PLUGIN_DIR}"

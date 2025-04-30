@@ -1,0 +1,71 @@
+name: "CodeQL"
+
+on:
+    push:
+        branches: ["main"]
+    pull_request:
+        branches: ["main"]
+    workflow_dispatch:
+    schedule:
+        - cron: "25 20 * * 1"
+
+jobs:
+    check-skip:
+        name: Check for Skip CI
+        runs-on: ubuntu-latest
+        outputs:
+            should-skip: ${{ steps.skip-check.outputs.should_skip }}
+        steps:
+            - name: Check if commit message is a release commit
+              id: skip-check
+              run: |
+                  # Get the commit message
+                  COMMIT_MSG=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+                    "https://api.github.com/repos/${{ github.repository }}/commits/${{ github.sha }}" \
+                    | jq -r '.commit.message')
+
+                  # Check if commit message is a release commit (release: X.Y.Z pattern)
+                  if [[ "$COMMIT_MSG" =~ ^release:\ [0-9]+\.[0-9]+\.[0-9]+ ]]; then
+                    echo "should_skip=true" >> $GITHUB_OUTPUT
+                    echo "Commit message is a release commit, skipping CodeQL analysis"
+                  # Also still support explicit [skip ci] marker
+                  elif [[ "$COMMIT_MSG" == *"[skip ci]"* ]]; then
+                    echo "should_skip=true" >> $GITHUB_OUTPUT
+                    echo "Commit message contains [skip ci], skipping CodeQL analysis"
+                  else
+                    echo "should_skip=false" >> $GITHUB_OUTPUT
+                    echo "Proceeding with CodeQL analysis"
+                  fi
+
+    analyze:
+        name: Analyze (${{ matrix.language }})
+        needs: check-skip
+        if: needs.check-skip.outputs.should-skip != 'true'
+        runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
+        permissions:
+            # required for all workflows
+            security-events: write
+
+            # required to fetch internal or private CodeQL packs
+            packages: read
+
+            # only required for workflows in private repositories
+            actions: read
+            contents: read
+
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - language: actions
+                      build-mode: none
+                    - language: typescript
+                      build-mode: none
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+            - name: Initialize CodeQL
+              uses: github/codeql-action/init@v3
+              with:
+                  languages: ${{ matrix.language }}
+                  build-mode: ${{ matrix.build-mode }}
