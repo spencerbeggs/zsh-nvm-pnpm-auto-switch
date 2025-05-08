@@ -9,7 +9,7 @@ const packageJsonPath = path.join(__dirname, "package.json");
 const packageJsonContent = fs.readFileSync(packageJsonPath, "utf8");
 const packageJson = JSON.parse(packageJsonContent);
 const repositoryUrl = packageJson?.repository?.url ?? "https://github.com/spencerbeggs/zsh-nvm-pnpm-auto-switch.git";
-
+// TODO: Add @semantic-release/changelog
 function getDryRunConfig() {
 	return {
 		repositoryUrl: getLocalRepoUrl(),
