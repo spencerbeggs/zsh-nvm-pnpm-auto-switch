@@ -31,18 +31,7 @@ function getDryRunConfig() {
 						{ type: "style", release: "patch" },
 						{ type: "test", release: "patch" },
 						{ scope: "no-release", release: false },
-						{ breaking: true, release: "major" },
-						// Explicitly handle the feat! syntax
-						{ type: "feat!", release: "major" },
-						{ type: "fix!", release: "major" },
-						{ type: "perf!", release: "major" },
-						{ type: "build!", release: "major" },
-						{ type: "ci!", release: "major" },
-						{ type: "chore!", release: "major" },
-						{ type: "docs!", release: "major" },
-						{ type: "refactor!", release: "major" },
-						{ type: "style!", release: "major" },
-						{ type: "test!", release: "major" }
+						{ breaking: true, release: "major" }
 					],
 					parserOpts: {
 						noteKeywords: ["BREAKING CHANGE", "BREAKING CHANGES"],
