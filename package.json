@@ -1,6 +1,6 @@
 {
 	"name": "zsh-nvm-pnpm-auto-switch",
-	"version": "1.0.0",
+	"version": "2.0.0",
 	"private": true,
 	"description": "A zsh plugin that automatically switches Node.js versions using nvm and manages pnpm package manager versions using Corepack when changing directories",
 	"repository": {
