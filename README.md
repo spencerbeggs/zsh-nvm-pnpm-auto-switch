@@ -31,7 +31,7 @@ A ZSH plugin that automatically switches Node.js versions (using `nvm`) and mana
 
 You can install the plugin directly from GitHub using one of the following methods:
 
-### From GitHub
+### From GitHub (reccomended)
 
 For automated/unattended installation (using default settings):
 
