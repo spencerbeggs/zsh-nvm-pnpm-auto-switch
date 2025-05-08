@@ -175,6 +175,8 @@ function getDryRunConfig() {
 								result.type = types[typeKey];
 							}
 
+							console.log("result", result);
+
 							// Handle BREAKING CHANGE notes
 							if (result.notes) {
 								// Create a new array with modified note objects
