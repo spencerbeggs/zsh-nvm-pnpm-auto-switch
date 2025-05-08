@@ -18,7 +18,7 @@
 		"lint:inspect": "pnpm dlx @eslint/config-inspector",
 		"prepare": "husky",
 		"prepare-commit": "pnpm lint:fix && pnpm test",
-		"preview:changelog": "semantic-release --dryRun --debug --ci",
+		"preview:changelog": "semantic-release --dry-run --debug",
 		"test": "vitest run",
 		"test:watch": "vitest",
 		"validate": "pnpm lint:fix && pnpm test"
